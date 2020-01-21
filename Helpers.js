@@ -44,6 +44,11 @@ const initializeObject = (object, name, listenersOnly = false) => {
             object.isSnappingToOriginalPosition = false
             object.isSnappingToCursor = false
 
+            object.hasChildWithListener = {
+                click: false,
+                hover: false
+            }
+
 
             object.inertia = {
                 speed: new THREE.Vector3(),
@@ -216,67 +221,34 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 object.attach(boundingBoxMesh)
             }
 
-
-            object.addClickEventListenerToChildren = (eventListener, addToHighestParentToo = false) => {
-                addClickEventListenerToLowestChildren(object, eventListener)
-                if (addToHighestParentToo)
-                    object.addEventListener("click", eventListener)
-                object.childrenHaveListeners = true
+            object.addEventListenerToChildren = (type, eventListener, addToHighestParent = false) => {
+                addEventListenerToLowestChildren(type, object, eventListener)
+                if (addToHighestParent)
+                    object.addEventListener(type, eventListener)
+                object.hasChildWithListener[type] = true
             }
 
-
-            const addClickEventListenerToLowestChildren = (object, eventListener) => {
+            const addEventListenerToLowestChildren = (type, object, eventListener) => {
                 if (object.children.length === 0) {
                     initializeObject(object, object.name, true)
-                    object.addEventListener("click", eventListener)
-                    // console.log(object.listeners.click)
+                    object.addEventListener(type, eventListener)
                 } else
                     object.children.forEach(child => {
-                        addClickEventListenerToLowestChildren(child, eventListener)
+                        addEventListenerToLowestChildren(type, child, eventListener)
                     })
             }
 
-            object.removeEventListenerFromChildren = (eventListener) => {
-                removeEventListenerFromLowestChildren(object, eventListener)
-                object.childrenHaveListeners = false
+            object.removeEventListenerFromChildren = (type, eventListener) => {
+                removeEventListenerFromLowestChildren(type, object, eventListener)
+                object.hasChildWithListener[type] = false
             }
 
-            const removeEventListenerFromLowestChildren = (object, eventListener) => {
+            const removeEventListenerFromLowestChildren = (type, object, eventListener) => {
                 if (object.children.length === 0) {
-                    object.removeEventListener("click", eventListener)
+                    object.removeEventListener(type, eventListener)
                 } else
                     object.children.forEach(child => {
-                        removeEventListenerFromLowestChildren(child, eventListener)
-                    })
-            }
-
-            object.addHoverEventListenerToChildren = (eventListener, addToHighestParentToo = false) => {
-                addHoverEventListenerToLowestChildren(object, eventListener)
-                if (addToHighestParentToo)
-                    object.addEventListener("hover", eventListener)
-                object.childrenHaveHoverListeners = true
-            }
-            const addHoverEventListenerToLowestChildren = (object, eventListener) => {
-                if (object.children.length === 0) {
-                    initializeObject(object, object.name, true)
-                    object.addEventListener("hover", eventListener)
-                } else
-                    object.children.forEach(child => {
-                        addHoverEventListenerToLowestChildren(child, eventListener)
-                    })
-            }
-
-            object.removeHoverEventListenerFromChildren = (eventListener) => {
-                removeHoverEventListenerFromLowestChildren(object, eventListener)
-                object.childrenHaveHoverListeners = false
-            }
-
-            const removeHoverEventListenerFromLowestChildren = (object, eventListener) => {
-                if (object.children.length === 0) {
-                    object.removeEventListener("hover", eventListener)
-                } else
-                    object.children.forEach(child => {
-                        removeHoverEventListenerFromLowestChildren(child, eventListener)
+                        removeEventListenerFromLowestChildren(type, child, eventListener)
                     })
             }
         }
