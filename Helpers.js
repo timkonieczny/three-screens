@@ -22,6 +22,11 @@ const initializeObject = (object, name, listenersOnly = false) => {
             object.listeners[type].splice(index, 1)
         }
 
+        object.hasEventListener=(type, listener)=> {
+            const index = object.listeners[type].indexOf(listener)
+            return index !== -1
+        }
+
         object.removeAllEventListenersOfType = type => {
             object.listeners[type] = []
         }
