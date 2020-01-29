@@ -119,7 +119,7 @@ class CursorEventHelper {
                 hasTouchStart = false
             else {
                 if (data.x === downPosition.x && data.y === downPosition.y)
-                    this.listeners.click.forEach(listener => { listener(data) })
+                    this.target.addEventListener("click", onClick)
                 this.listeners.mouseUp.forEach(listener => { listener(data) })
                 this.listeners.up.forEach(listener => { listener(data) })
                 this.target.removeEventListener("mousemove", onMouseDrag)
@@ -137,12 +137,16 @@ class CursorEventHelper {
 
         this.target.addEventListener("touchend", event => {
             if (data.x === downPosition.x && data.y === downPosition.y)
-                this.listeners.click.forEach(listener => { listener(data) })
+                this.target.addEventListener("click", onClick)
             this.listeners.touchEnd.forEach(listener => { listener(data) })
             this.listeners.up.forEach(listener => { listener(data) })
             this.target.removeEventListener("touchmove", onTouchDrag)
-            // FIXME: prevent DOM click event from firing
         })
+
+        const onClick = event => {
+            this.target.removeEventListener("click", onClick)
+            this.listeners.click.forEach(listener => { listener(data) })
+        }
     }
 
     addEventListener(type, listener) {
