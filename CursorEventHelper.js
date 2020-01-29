@@ -129,15 +129,19 @@ class CursorEventHelper {
         this.target.addEventListener("touchstart", event => {
             hasTouchStart = true
             data.set(event.touches[0].clientX, event.touches[0].clientY)
+            downPosition.set(event.touches[0].clientX, event.touches[0].clientY)
             this.listeners.touchStart.forEach(listener => { listener(data) })
             this.listeners.down.forEach(listener => { listener(data) })
             this.target.addEventListener("touchmove", onTouchDrag)
         })
 
         this.target.addEventListener("touchend", event => {
+            if (data.x === downPosition.x && data.y === downPosition.y)
+                this.listeners.click.forEach(listener => { listener(data) })
             this.listeners.touchEnd.forEach(listener => { listener(data) })
             this.listeners.up.forEach(listener => { listener(data) })
             this.target.removeEventListener("touchmove", onTouchDrag)
+            // FIXME: prevent DOM click event from firing
         })
     }
 
