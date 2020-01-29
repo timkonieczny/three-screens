@@ -2,6 +2,9 @@ import * as THREE from "three"
 import { easeOutBack, easeOutExpo } from 'js-easing-functions';
 
 const initializeObject = (object, name, listenersOnly = false) => {
+
+    // TODO: add these properties to the THREE.Object3D prototype in Canvas.js. Get rid of all initializeObject calls
+
     if (!object.listeners) {  // prevent objects from being initialized twice
 
         object.listeners = {
@@ -22,7 +25,7 @@ const initializeObject = (object, name, listenersOnly = false) => {
             object.listeners[type].splice(index, 1)
         }
 
-        object.hasEventListener=(type, listener)=> {
+        object.hasEventListener = (type, listener) => {
             const index = object.listeners[type].indexOf(listener)
             return index !== -1
         }
