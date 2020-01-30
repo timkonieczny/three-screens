@@ -29,7 +29,7 @@ class Canvas {
             )
         })
 
-        window.addEventListener("resize", this.onResize)
+        window.addEventListener("resize", this.onResize.bind(this))
         this.onResize()
         this.loadResources()
     }
@@ -58,6 +58,7 @@ class Canvas {
     }
 
     onResize() {
+        // FIXME: viewport size should be inferred from canvas
         this.renderer.setSize(window.innerWidth, window.innerHeight, false)
         this.camera.aspect = this.canvas.width / this.canvas.height
         this.camera.updateProjectionMatrix()
