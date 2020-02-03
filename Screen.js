@@ -20,7 +20,6 @@ class Screen {
     }
 
     transitionIn(previousScreen, activeCharacter) {
-        console.log(`Transitioning in ${this.name} screen`)
         const checkObjectsAndFinishTransitionIn = _ => {
             if (
                 this.numberOfReadyNonSharedObjects ==
@@ -113,8 +112,6 @@ class Screen {
     }
 
     transitionOut(nextScreen, activeCharacter) {
-        console.log(`Transitioning out ${this.name} screen`)
-
         const checkObjectsAndFinishTransitionOut = _ => {
             if (
                 this.numberOfReadyNonSharedObjects ==
