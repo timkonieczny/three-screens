@@ -321,6 +321,11 @@ const initializeCamera = camera => {
         const index = camera.listeners[type].indexOf(listener)
         camera.listeners[type].splice(index, 1)
     }
+    
+    camera.hasEventListener = (type, listener) => {
+        const index = camera.listeners[type].indexOf(listener)
+        return index !== -1
+    }
 }
 
 const coords3D = new THREE.Vector2()
