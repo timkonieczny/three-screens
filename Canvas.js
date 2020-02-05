@@ -3,9 +3,7 @@ import { initializeCamera } from "./Helpers"
 import ScreenManager from "./ScreenManager"
 
 class Canvas {
-
     constructor(canvas, camera, renderer) {
-
         this.listeners = {
             readyToRender: []
         }
@@ -54,7 +52,12 @@ class Canvas {
             if (!screen.isInitializationFinished) return
         })
         this.screenManager = new ScreenManager(this.firstScreen)
-        this.listeners.readyToRender.forEach(listener => { listener(this) })
+
+        // FIXME: this is called 3 times
+        this.screenManager.uploadObjects(Object.values(this.screen), this.renderer, this.camera)
+        this.listeners.readyToRender.forEach(listener => {
+            listener(this)
+        })
     }
 
     onResize() {

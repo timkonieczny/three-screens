@@ -4,6 +4,20 @@ class ScreenManager {
         this.transitionTo(activeScreen)
     }
 
+    uploadObjects(screens, renderer, camera) {
+        screens.forEach(screen => {
+            screen.objects.forEach(object => {
+                object.visible = true
+            })
+        })
+        renderer.render(screens[0].scene, camera)
+        screens.forEach(screen => {
+            screen.objects.forEach(object => {
+                object.visible = false
+            })
+        })
+    }
+
     transitionTo(screen, activeCharacter = null) {
         if (!this.isTransitionInProgress && screen !== this.activeScreen) {
             this.isTransitionInProgress = true
