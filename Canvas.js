@@ -48,12 +48,18 @@ class Canvas {
 
     onScreenInitializationFinished() {
         if (!this.allMeshesReady) return
+
+        let areAllScreensInitialized = true
         Object.entries(this.screen).forEach(([_, screen]) => {
-            if (!screen.isInitializationFinished) return
+            if (!screen.isInitializationFinished) {
+                areAllScreensInitialized = false
+                return
+            }
         })
+        if (!areAllScreensInitialized) return
+
         this.screenManager = new ScreenManager(this.firstScreen)
 
-        // FIXME: this is called 3 times
         this.screenManager.uploadObjects(Object.values(this.screen), this.renderer, this.camera)
         this.listeners.readyToRender.forEach(listener => {
             listener(this)
