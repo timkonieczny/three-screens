@@ -5,7 +5,7 @@ import ScreenManager from "./ScreenManager"
 class Canvas {
     constructor(canvas, camera, renderer) {
         this.listeners = {
-            readyToRender: []
+            allScreensInitialized: []
         }
 
         this.canvas = canvas
@@ -18,8 +18,7 @@ class Canvas {
         this.meshHolder = null
     }
 
-    initialize(firstScreen) {
-        this.firstScreen = firstScreen
+    initialize() {
         Object.entries(this.screen).forEach(([_, screen]) => {
             screen.addEventListener(
                 "initializationFinished",
@@ -63,10 +62,11 @@ class Canvas {
         })
         if (!areAllScreensInitialized) return
 
-        this.screenManager = new ScreenManager(this.firstScreen)
+        this.screenManager = new ScreenManager()
 
         this.screenManager.uploadObjects(Object.values(this.screen), this.renderer, this.camera)
-        this.listeners.readyToRender.forEach(listener => {
+
+        this.listeners.allScreensInitialized.forEach(listener => {
             listener(this)
         })
     }

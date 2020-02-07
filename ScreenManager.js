@@ -1,7 +1,7 @@
 class ScreenManager {
     constructor(activeScreen) {
         this.isTransitionInProgress = false
-        this.transitionTo(activeScreen)
+        if (activeScreen) this.transitionTo(activeScreen)
     }
 
     uploadObjects(screens, renderer, camera) {
