@@ -33,11 +33,16 @@ class Canvas {
     }
 
     loadResources() {
-        this.meshHolder.addEventListener("allMeshesReady", _ => {
+        if (this.meshHolder.meshes.size === 0) {
+            this.meshHolder.addEventListener("allMeshesReady", _ => {
+                this.allMeshesReady = true
+                this.initializeScreens()
+            })
+            this.meshHolder.loadModels()
+        } else {
             this.allMeshesReady = true
-            if (this.allMeshesReady) this.initializeScreens()
-        })
-        this.meshHolder.loadModels()
+            this.initializeScreens()
+        }
     }
 
     initializeScreens() {
@@ -57,6 +62,8 @@ class Canvas {
             }
         })
         if (!areAllScreensInitialized) return
+
+        console.log("this.onScreenInitializationFinished()")
 
         this.screenManager = new ScreenManager(this.firstScreen)
 
