@@ -63,8 +63,6 @@ class Canvas {
         })
         if (!areAllScreensInitialized) return
 
-        console.log("this.onScreenInitializationFinished()")
-
         this.screenManager = new ScreenManager(this.firstScreen)
 
         this.screenManager.uploadObjects(Object.values(this.screen), this.renderer, this.camera)
