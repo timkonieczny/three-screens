@@ -7,13 +7,15 @@ class ScreenManager {
     uploadObjects(screens, renderer, camera) {
         screens.forEach(screen => {
             screen.objects.forEach(object => {
+                object.wasVisible = object.visible
                 object.visible = true
             })
         })
         renderer.render(screens[0].scene, camera)
         screens.forEach(screen => {
             screen.objects.forEach(object => {
-                object.visible = false
+                object.visible = object.wasVisible
+                object.wasVisible = undefined
             })
         })
     }
