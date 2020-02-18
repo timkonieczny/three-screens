@@ -321,7 +321,7 @@ const initializeCamera = camera => {
         const index = camera.listeners[type].indexOf(listener)
         camera.listeners[type].splice(index, 1)
     }
-    
+
     camera.hasEventListener = (type, listener) => {
         const index = camera.listeners[type].indexOf(listener)
         return index !== -1
@@ -336,6 +336,20 @@ const normalizeScreenCoords = (coords, canvas) => {
         coords.y / canvas.height * -2 + 1
     )
     return coords3D
+}
+
+const vec = new THREE.Vector3()
+const pos = new THREE.Vector3()
+const getScreenSpacePositionAtZ0 = (normalizedScreenCoords2D, camera) => {
+    vec.set(
+        normalizedScreenCoords2D.x,
+        normalizedScreenCoords2D.y,
+        0.5)
+    vec.unproject(camera)
+    vec.sub(camera.position).normalize()
+    var distance = - camera.position.z / vec.z
+    pos.copy(camera.position).add(vec.multiplyScalar(distance))
+    return pos
 }
 
 const moveObjectTransformationOriginToCenter = geometry => {
@@ -410,4 +424,4 @@ const getPointBetweenObjectAndCamera = (farVector, camera, distanceFromFarVector
     return outVector
 }
 
-export { initializeObject, initializeCamera, normalizeScreenCoords, getTextMesh, getMultiLineTextMesh, setRoughness, getPointBetweenObjectAndCamera }
+export { initializeObject, initializeCamera, normalizeScreenCoords, getTextMesh, getMultiLineTextMesh, setRoughness, getPointBetweenObjectAndCamera, getScreenSpacePositionAtZ0 }
