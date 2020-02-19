@@ -85,8 +85,7 @@ class CursorEventHelper {
 
         let hasTouchStart = false
 
-        const onMouseDrag = event => {
-            data.set(event.clientX, event.clientY)
+        const onMouseDrag = _ => {
             this.listeners.mouseDrag.forEach(listener => { listener(data) })
             this.listeners.drag.forEach(listener => { listener(data) })
         }
