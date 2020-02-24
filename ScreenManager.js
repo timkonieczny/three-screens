@@ -12,6 +12,7 @@ class ScreenManager {
             })
         })
         renderer.render(screens[0].scene, camera)
+        renderer.clear()
         screens.forEach(screen => {
             screen.objects.forEach(object => {
                 object.visible = object.wasVisible
