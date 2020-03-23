@@ -5,7 +5,7 @@ import ScreenManager from "./ScreenManager"
 class CanvasBase {
     constructor(canvas, camera, renderer, meshHolder) {
         this.listeners = {
-            allScreensInitialized: []
+            ready: []
         }
 
         this.canvas = canvas
@@ -21,7 +21,7 @@ class CanvasBase {
     initialize() {
         Object.entries(this.screens).forEach(([_, screen]) => {
             screen.addEventListener(
-                "initializationFinished",
+                "ready",
                 this.onScreenInitializationFinished.bind(this)
             )
         })
@@ -33,7 +33,7 @@ class CanvasBase {
 
     loadResources() {
         if (this.meshHolder.meshes.size === 0) {
-            this.meshHolder.addEventListener("meshesLoaded", _ => {
+            this.meshHolder.addEventListener("ready", _ => {
                 this.meshesLoaded = true
                 this.initializeScreens()
             })
@@ -66,7 +66,7 @@ class CanvasBase {
 
         this.screenManager.uploadObjects(Object.values(this.screens), this.renderer, this.camera)
 
-        this.listeners.allScreensInitialized.forEach(listener => {
+        this.listeners.ready.forEach(listener => {
             listener(this)
         })
     }

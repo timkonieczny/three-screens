@@ -5,7 +5,7 @@ import { initializeObject } from "./Helpers.js"
 class MeshHolderBase {
     constructor() {
         this.listeners = {
-            meshesLoaded: [],
+            ready: [],
             progress: []
         }
 
@@ -20,7 +20,7 @@ class MeshHolderBase {
         }
 
         this.loadingManager.onLoad = () => {
-            this.listeners.meshesLoaded.forEach(listener => {
+            this.listeners.ready.forEach(listener => {
                 listener()
             })
         }

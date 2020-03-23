@@ -12,7 +12,7 @@ class Screen {
             transitionOutFinished: [],
             transitionInStarted: [],
             transitionOutStarted: [],
-            initializationFinished: [],
+            ready: [],
             update: []
         }
 
