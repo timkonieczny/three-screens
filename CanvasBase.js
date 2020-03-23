@@ -2,8 +2,8 @@ import * as THREE from "three"
 import { initializeCamera } from "./Helpers"
 import ScreenManager from "./ScreenManager"
 
-class Canvas {
-    constructor(canvas, camera, renderer) {
+class CanvasBase {
+    constructor(canvas, camera, renderer, meshHolder) {
         this.listeners = {
             allScreensInitialized: []
         }
@@ -13,13 +13,13 @@ class Canvas {
         this.camera = camera
         initializeCamera(this.camera)
         this.renderer = renderer
-        this.allMeshesReady = false
+        this.meshesLoaded = false
 
-        this.meshHolder = null
+        this.meshHolder = meshHolder
     }
 
     initialize() {
-        Object.entries(this.screen).forEach(([_, screen]) => {
+        Object.entries(this.screens).forEach(([_, screen]) => {
             screen.addEventListener(
                 "initializationFinished",
                 this.onScreenInitializationFinished.bind(this)
@@ -33,28 +33,28 @@ class Canvas {
 
     loadResources() {
         if (this.meshHolder.meshes.size === 0) {
-            this.meshHolder.addEventListener("allMeshesReady", _ => {
-                this.allMeshesReady = true
+            this.meshHolder.addEventListener("meshesLoaded", _ => {
+                this.meshesLoaded = true
                 this.initializeScreens()
             })
             this.meshHolder.loadModels()
         } else {
-            this.allMeshesReady = true
+            this.meshesLoaded = true
             this.initializeScreens()
         }
     }
 
     initializeScreens() {
-        Object.entries(this.screen).forEach(([_, screen]) => {
+        Object.entries(this.screens).forEach(([_, screen]) => {
             screen.initialize(this.meshHolder)
         })
     }
 
     onScreenInitializationFinished() {
-        if (!this.allMeshesReady) return
+        if (!this.meshesLoaded) return
 
         let areAllScreensInitialized = true
-        Object.entries(this.screen).forEach(([_, screen]) => {
+        Object.entries(this.screens).forEach(([_, screen]) => {
             if (!screen.isInitializationFinished) {
                 areAllScreensInitialized = false
                 return
@@ -64,7 +64,7 @@ class Canvas {
 
         this.screenManager = new ScreenManager()
 
-        this.screenManager.uploadObjects(Object.values(this.screen), this.renderer, this.camera)
+        this.screenManager.uploadObjects(Object.values(this.screens), this.renderer, this.camera)
 
         this.listeners.allScreensInitialized.forEach(listener => {
             listener(this)
@@ -98,4 +98,4 @@ class Canvas {
     }
 }
 
-export default Canvas
+export default CanvasBase

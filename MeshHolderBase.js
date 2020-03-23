@@ -5,10 +5,25 @@ import { initializeObject } from "./Helpers.js"
 class MeshHolderBase {
     constructor() {
         this.listeners = {
-            allMeshesReady: []
+            meshesLoaded: [],
+            progress: []
         }
 
         this.meshes = new Map()
+
+        this.loadingManager = new THREE.LoadingManager()
+
+        this.loadingManager.onProgress = (_, itemsLoaded, itemsTotal) => {
+            this.listeners.progress.forEach(listener => {
+                listener(itemsLoaded / itemsTotal)
+            })
+        }
+
+        this.loadingManager.onLoad = () => {
+            this.listeners.meshesLoaded.forEach(listener => {
+                listener()
+            })
+        }
     }
 
     addObject(imported, name) {
