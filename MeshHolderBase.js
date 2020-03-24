@@ -28,10 +28,13 @@ class MeshHolderBase {
 
     addObject(imported, name) {
         const object = imported.scene
-        object.name = name
+        const group = new THREE.Group()
+
+        group.name = name
+        group.add(object)
         if (imported.animations.length > 0)
-            object.animationClips = imported.animations
-        this.meshes.set(object.name, object)
+            group.animationClips = imported.animations
+        this.meshes.set(group.name, group)
     }
 
     addEventListener(type, listener) {
