@@ -98,10 +98,8 @@ const initializeObject = (object, name, listenersOnly = false) => {
                     mesh.scale.z = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.z
                 }
 
-                if (interpolator === 1) {
-                    mesh.removeEventListener("update", mesh.updateTransitionIn)
+                if (interpolator === 1)
                     mesh.listeners.transitionInFinished.forEach(listener => { listener(mesh) })
-                }
             }
 
             object.updateTransitionOut = (tslf, mesh) => {
@@ -115,12 +113,8 @@ const initializeObject = (object, name, listenersOnly = false) => {
                     mesh.scale.z = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.z
                 }
 
-                if (interpolator === 1) {
-                    mesh.visible = false
-                    mesh.scale.copy(mesh.originalScale)
-                    mesh.removeEventListener("update", mesh.updateTransitionOut)
+                if (interpolator === 1)
                     mesh.listeners.transitionOutFinished.forEach(listener => { listener(mesh) })
-                }
             }
 
             object.transition = {

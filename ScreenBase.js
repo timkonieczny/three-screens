@@ -56,6 +56,8 @@ class Screen {
         this.nonSharedObjects.forEach(object => {
             this.scene.add(object)
             const onTransitionInFinished = _ => {
+                object.removeEventListener("update", object.updateTransitionIn)
+
                 object.removeEventListener(
                     "transitionInFinished",
                     onTransitionInFinished
@@ -145,6 +147,9 @@ class Screen {
             object.originalScale = object.scale.clone()
             object.addEventListener("update", object.updateTransitionOut)
             object.addEventListener("transitionOutFinished", _ => {
+                object.visible = false
+                object.scale.copy(object.originalScale)
+                object.removeEventListener("update", object.updateTransitionOut)    // TODO: move some of these calls to a listener
                 this.scene.remove(object)
 
                 if (this.scene.children.length == this.sharedObjects.length) {
