@@ -57,7 +57,6 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 hover: false
             }
 
-
             object.inertia = {
                 speed: new THREE.Vector3(),
                 speedFactor: 1,
@@ -81,91 +80,98 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 }
             }
 
-            object.updateTransitionIn = (tslf, mesh) => {
-                mesh.transition.time.elapsed += tslf
-
-                if (mesh.visibleOverride === null)
-                    mesh.visible = true
-                else
-                    mesh.visible = mesh.visibleOverride
-
-                const interpolator = Math.min(mesh.transition.time.elapsed / mesh.transition.time.total.in, 1)
-                if (mesh instanceof THREE.Light) {
-                    mesh.intensity = easeOutExpo(interpolator, 0, 1, 1) * mesh.originalIntensity
-                } else {
-                    mesh.scale.x = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.x
-                    mesh.scale.y = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.y
-                    mesh.scale.z = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.z
-                }
-
-                if (interpolator === 1)
-                    mesh.listeners.transitionInFinished.forEach(listener => { listener(mesh) })
-            }
-
-            object.updateTransitionOut = (tslf, mesh) => {
-                mesh.transition.time.elapsed += tslf
-                const interpolator = Math.min(mesh.transition.time.elapsed / mesh.transition.time.total.out, 1)
-                if (mesh instanceof THREE.Light) {
-                    mesh.intensity = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalIntensity
-                } else {
-                    mesh.scale.x = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.x
-                    mesh.scale.y = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.y
-                    mesh.scale.z = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.z
-                }
-
-                if (interpolator === 1)
-                    mesh.listeners.transitionOutFinished.forEach(listener => { listener(mesh) })
-            }
-
-            object.transition = {
-                time: {
-                    total: {
-                        in: 600,
-                        out: 600,
-                        shared: 1200
+            object.animation = {
+                transitionIn: {
+                    time: {
+                        total: 600,
+                        elapsed: 0
                     },
-                    elapsed: 0
+                    callback: (tslf, mesh) => {
+                        mesh.animation.transitionIn.time.elapsed += tslf
+
+                        if (mesh.visibleOverride === null)
+                            mesh.visible = true
+                        else
+                            mesh.visible = mesh.visibleOverride
+
+                        const interpolator = Math.min(mesh.animation.transitionIn.time.elapsed / mesh.animation.transitionIn.time.total, 1)
+                        if (mesh instanceof THREE.Light) {
+                            mesh.intensity = easeOutExpo(interpolator, 0, 1, 1) * mesh.originalIntensity
+                        } else {
+                            mesh.scale.x = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.x
+                            mesh.scale.y = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.y
+                            mesh.scale.z = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.z
+                        }
+
+                        if (interpolator === 1)
+                            mesh.listeners.transitionInFinished.forEach(listener => { listener(mesh) })
+                    }
                 },
-                screen: {
-                    from: null,
-                    to: null
+                transitionOut: {
+                    time: {
+                        total: 600,
+                        elapsed: 0
+                    },
+                    callback: (tslf, mesh) => {
+                        mesh.animation.transitionOut.time.elapsed += tslf
+                        const interpolator = Math.min(mesh.animation.transitionOut.time.elapsed / mesh.animation.transitionOut.time.total, 1)
+                        if (mesh instanceof THREE.Light) {
+                            mesh.intensity = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalIntensity
+                        } else {
+                            mesh.scale.x = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.x
+                            mesh.scale.y = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.y
+                            mesh.scale.z = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.z
+                        }
+
+                        if (interpolator === 1)
+                            mesh.listeners.transitionOutFinished.forEach(listener => { listener(mesh) })
+                    }
                 },
-                character: null
-            }
+                transitionShared: {
+                    time: {
+                        total: 600,
+                        elapsed: 0
+                    },
+                    screen: {
+                        from: null,
+                        to: null
+                    },
+                    character: null,
+                    callback: (tslf, mesh) => {
+                        mesh.animation.transitionShared.time.elapsed += tslf
 
-            object.updateSharedScreenTransition = (tslf, mesh) => {
-                mesh.transition.time.elapsed += tslf
+                        if (mesh.animation.transitionShared.time.elapsed >= mesh.animation.transitionShared.time.total)
+                            mesh.listeners.sharedScreenTransitionFinished.forEach(listener => { listener() })
 
-                if (mesh.transition.time.elapsed >= mesh.transition.time.total.shared)
-                    mesh.listeners.sharedScreenTransitionFinished.forEach(listener => { listener() })
-
-                const interpolator = Math.min(mesh.transition.time.elapsed / mesh.transition.time.total.shared, 1)
-                if (mesh.transition.screen.from.sharedObjectConfigs[mesh.name]) {
-                    let fromConfig, toConfig
-                    if (mesh.transition.screen.from.sharedObjectConfigs[mesh.name][mesh.transition.character]) {
-                        fromConfig = mesh.transition.screen.from.sharedObjectConfigs[mesh.name][mesh.transition.character]
-                    } else {
-                        fromConfig = mesh.transition.screen.from.sharedObjectConfigs[mesh.name]
+                        const interpolator = Math.min(mesh.animation.transitionShared.time.elapsed / mesh.animation.transitionShared.time.total, 1)
+                        if (mesh.animation.transitionShared.screen.from.sharedObjectConfigs[mesh.name]) {
+                            let fromConfig, toConfig
+                            if (mesh.animation.transitionShared.from.sharedObjectConfigs[mesh.name][mesh.transition.character]) {
+                                fromConfig = mesh.animation.transitionShared.from.sharedObjectConfigs[mesh.name][mesh.transition.character]
+                            } else {
+                                fromConfig = mesh.animation.transitionShared.from.sharedObjectConfigs[mesh.name]
+                            }
+                            if (mesh.animation.transitionShared.to.sharedObjectConfigs[mesh.name][mesh.transition.character]) {
+                                toConfig = mesh.animation.transitionShared.to.sharedObjectConfigs[mesh.name][mesh.transition.character]
+                            } else {
+                                toConfig = mesh.animation.transitionShared.to.sharedObjectConfigs[mesh.name]
+                            }
+                            if (fromConfig.position && toConfig.position)
+                                mesh.position.lerpVectors(fromConfig.position, toConfig.position, easeOutExpo(interpolator, 0, 1, 1))
+                            if (fromConfig.scale && toConfig.scale)
+                                mesh.scale.lerpVectors(fromConfig.scale, toConfig.scale, easeOutExpo(interpolator, 0, 1, 1))
+                            if (fromConfig.rotation && toConfig.rotation)
+                                THREE.Quaternion.slerp(fromConfig.rotation, toConfig.rotation, mesh.quaternion, easeOutExpo(interpolator, 0, 1, 1))
+                            if (fromConfig.intensity && toConfig.intensity) {
+                                const intensityDelta = toConfig.intensity - fromConfig.intensity
+                                mesh.intensity = fromConfig.intensity + intensityDelta * easeOutExpo(interpolator, 0, 1, 1)
+                            }
+                        }
+                        if (interpolator === 1) {
+                            // TODO: via listener
+                            mesh.listeners.sharedScreenTransitionFinished.forEach(listener => { listener(mesh) })
+                        }
                     }
-                    if (mesh.transition.screen.to.sharedObjectConfigs[mesh.name][mesh.transition.character]) {
-                        toConfig = mesh.transition.screen.to.sharedObjectConfigs[mesh.name][mesh.transition.character]
-                    } else {
-                        toConfig = mesh.transition.screen.to.sharedObjectConfigs[mesh.name]
-                    }
-                    if (fromConfig.position && toConfig.position)
-                        mesh.position.lerpVectors(fromConfig.position, toConfig.position, easeOutExpo(interpolator, 0, 1, 1))
-                    if (fromConfig.scale && toConfig.scale)
-                        mesh.scale.lerpVectors(fromConfig.scale, toConfig.scale, easeOutExpo(interpolator, 0, 1, 1))
-                    if (fromConfig.rotation && toConfig.rotation)
-                        THREE.Quaternion.slerp(fromConfig.rotation, toConfig.rotation, mesh.quaternion, easeOutExpo(interpolator, 0, 1, 1))
-                    if (fromConfig.intensity && toConfig.intensity) {
-                        const intensityDelta = toConfig.intensity - fromConfig.intensity
-                        mesh.intensity = fromConfig.intensity + intensityDelta * easeOutExpo(interpolator, 0, 1, 1)
-                    }
-                }
-                if (interpolator === 1) {
-                    mesh.removeEventListener("update", mesh.updateSharedScreenTransition)
-                    mesh.listeners.sharedScreenTransitionFinished.forEach(listener => { listener(mesh) })
                 }
             }
 
@@ -246,9 +252,9 @@ const initializeObject = (object, name, listenersOnly = false) => {
             }
 
             const removeEventListenerFromLowestChildren = (type, object, eventListener) => {
-                if (object.children.length === 0) {
+                if (object.children.length === 0)
                     object.removeEventListener(type, eventListener)
-                } else
+                else
                     object.children.forEach(child => {
                         removeEventListenerFromLowestChildren(type, child, eventListener)
                     })

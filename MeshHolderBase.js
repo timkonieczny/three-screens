@@ -63,16 +63,18 @@ class MeshHolderBase {
 
         if (originalMesh.animationClips) {
 
-            mesh.animation = {
+
+
+            mesh.animation.model = {
                 mixer: new THREE.AnimationMixer(mesh),
                 actions: new Map(),
-                update: (tslf, mesh) => {
-                    mesh.animation.mixer.update(tslf * 0.001)
+                callback: (tslf, mesh) => {
+                    mesh.animation.model.mixer.update(tslf * 0.001)
                 }
             }
 
             originalMesh.animationClips.forEach(clip => {
-                mesh.animation.actions.set(clip.name, mesh.animation.mixer.clipAction(clip))
+                mesh.animation.model.actions.set(clip.name, mesh.animation.model.mixer.clipAction(clip))
             })
         }
 
