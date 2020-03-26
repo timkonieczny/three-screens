@@ -1,6 +1,7 @@
 class ScreenManager {
     constructor(activeScreen) {
-        this.isTransitionInProgress = false
+        this.isTransitionOutInProgress = false
+        this.isTransitionInInProgress = false
         this.nextScreen = null
         if (activeScreen) this.transitionTo(activeScreen)
     }
@@ -25,19 +26,26 @@ class ScreenManager {
     transitionTo(screen, activeCharacter = null) {
         if (screen !== this.activeScreen) {
             this.nextScreen = screen
-            if (!this.isTransitionInProgress) {
-                this.isTransitionInProgress = true
+            if (this.isTransitionInInProgress)
+                this.activeScreen.nonSharedObjects.forEach(object => {
+                    object.listeners.transitionInFinished.forEach(listener => {
+                        listener(object)
+                    })
+                })
+            if (!this.isTransitionOutInProgress) {
+                this.isTransitionOutInProgress = true
                 const onTransitionOutFinished = _ => {
                     const previousScreen = this.activeScreen
                     this.activeScreen = this.nextScreen
                     this.activeScreen.addEventListener("transitionInFinished", onTransitionInFinished)
+                    this.isTransitionInInProgress = true
                     this.activeScreen.transitionIn(previousScreen, activeCharacter)
                     if (previousScreen)
                         previousScreen.removeEventListener(
                             "transitionOutFinished",
                             onTransitionOutFinished
                         )
-                    this.isTransitionInProgress = false
+                    this.isTransitionOutInProgress = false
                 }
                 const onTransitionInFinished = _ => {
                     // This just needs to be called, so that shared objects
@@ -53,6 +61,7 @@ class ScreenManager {
                         "transitionInFinished",
                         onTransitionInFinished
                     )
+                    this.isTransitionInInProgress = false
                 }
 
                 if (this.activeScreen) {
