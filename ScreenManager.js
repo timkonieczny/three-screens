@@ -11,12 +11,15 @@ class ScreenManager {
             screen.objects.forEach(object => {
                 object.wasVisible = object.visible
                 object.visible = true
+                screens[0].scene.add(object)
             })
+
         })
         renderer.render(screens[0].scene, camera)
         renderer.clear()
         screens.forEach(screen => {
             screen.objects.forEach(object => {
+                screens[0].scene.remove(object)
                 object.visible = object.wasVisible
                 object.wasVisible = undefined
             })
