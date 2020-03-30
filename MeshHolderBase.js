@@ -4,7 +4,7 @@ import { initializeObject } from "./Helpers.js"
 
 class MeshHolderBase {
     constructor() {
-        this.listeners = {
+        this.listeners = {  // FIXME: ready event not firing when MeshHolder is used without loading meshes
             ready: [],
             progress: []
         }
