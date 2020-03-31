@@ -424,4 +424,10 @@ const getPointBetweenObjectAndCamera = (farVector, camera, distanceFromFarVector
     return outVector
 }
 
-export { initializeObject, initializeCamera, normalizeScreenCoords, getTextMesh, getMultiLineTextMesh, setRoughness, getPointBetweenObjectAndCamera, getScreenSpacePositionAtZ0 }
+const setMeshPropertyRecursively = (object, propertyName, value) => {
+    if (object.isMesh)
+        object[propertyName] = value
+    object.children.forEach(child => { setMeshPropertyRecursively(child, propertyName, value) })
+}
+
+export { initializeObject, initializeCamera, normalizeScreenCoords, getTextMesh, getMultiLineTextMesh, setRoughness, getPointBetweenObjectAndCamera, getScreenSpacePositionAtZ0, setMeshPropertyRecursively }
