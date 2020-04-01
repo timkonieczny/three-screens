@@ -429,5 +429,10 @@ const setMeshPropertyRecursively = (object, propertyName, value) => {
         object[propertyName] = value
     object.children.forEach(child => { setMeshPropertyRecursively(child, propertyName, value) })
 }
+const setMaterialPropertyRecursively = (object, propertyName, value) => {
+    if (object.isMesh)
+        object.material[propertyName] = value
+    object.children.forEach(child => { setMaterialPropertyRecursively(child, propertyName, value) })
+}
 
-export { initializeObject, initializeCamera, normalizeScreenCoords, getTextMesh, getMultiLineTextMesh, setRoughness, getPointBetweenObjectAndCamera, getScreenSpacePositionAtZ0, setMeshPropertyRecursively }
+export { initializeObject, initializeCamera, normalizeScreenCoords, getTextMesh, getMultiLineTextMesh, setRoughness, getPointBetweenObjectAndCamera, getScreenSpacePositionAtZ0, setMeshPropertyRecursively, setMaterialPropertyRecursively }
