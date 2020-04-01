@@ -61,7 +61,9 @@ class CursorEventHelper {
                     y: null
                 }
             },
-            set: (x, y) => {
+            initialEvent: null,
+            set: (x, y, event = null) => {
+                data.initialEvent = event
                 data.last.x = data.x
                 data.last.y = data.y
                 data.x = x
@@ -92,20 +94,20 @@ class CursorEventHelper {
 
         this.target.addEventListener("mousemove", event => {
             if (!hasTouchStart) {
-                data.set(event.clientX, event.clientY)
+                data.set(event.clientX, event.clientY, event)
                 this.listeners.mouseMove.forEach(listener => { listener(data) })
             }
         })
 
         const onTouchDrag = event => {
-            data.set(event.touches[0].clientX, event.touches[0].clientY)
+            data.set(event.touches[0].clientX, event.touches[0].clientY, event)
             this.listeners.touchDrag.forEach(listener => { listener(data) })
             this.listeners.drag.forEach(listener => { listener(data) })
         }
 
         this.target.addEventListener("mousedown", event => {
             if (!hasTouchStart) {
-                data.set(event.clientX, event.clientY)
+                data.set(event.clientX, event.clientY, event)
                 downPosition.set(event.clientX, event.clientY)
                 this.listeners.mouseDown.forEach(listener => { listener(data) })
                 this.listeners.down.forEach(listener => { listener(data) })
@@ -127,7 +129,7 @@ class CursorEventHelper {
 
         this.target.addEventListener("touchstart", event => {
             hasTouchStart = true
-            data.set(event.touches[0].clientX, event.touches[0].clientY)
+            data.set(event.touches[0].clientX, event.touches[0].clientY, event)
             downPosition.set(event.touches[0].clientX, event.touches[0].clientY)
             this.listeners.touchStart.forEach(listener => { listener(data) })
             this.listeners.down.forEach(listener => { listener(data) })
