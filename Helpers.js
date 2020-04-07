@@ -57,6 +57,9 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 hover: false
             }
 
+            if (mesh instanceof THREE.Light)
+                mesh.originalIntensity = mesh.intensity
+
             object.inertia = {
                 speed: new THREE.Vector3(),
                 speedFactor: 1,
@@ -84,7 +87,10 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 transitionIn: {
                     time: {
                         total: 600,
-                        elapsed: 0
+                        elapsed: 0,
+                        transferFunction: interpolator => {
+                            return easeOutExpo(interpolator, 0, 1, 1)
+                        }
                     },
                     callback: (tslf, mesh) => {
                         mesh.animation.transitionIn.time.elapsed += tslf
@@ -95,12 +101,13 @@ const initializeObject = (object, name, listenersOnly = false) => {
                             mesh.visible = mesh.visibleOverride
 
                         const interpolator = Math.min(mesh.animation.transitionIn.time.elapsed / mesh.animation.transitionIn.time.total, 1)
+                        const transformedInterpolator = mesh.animation.transitionIn.time.transferFunction(interpolator)
                         if (mesh instanceof THREE.Light) {
-                            mesh.intensity = easeOutExpo(interpolator, 0, 1, 1) * mesh.originalIntensity
+                            mesh.intensity = transformedInterpolator * mesh.originalIntensity
                         } else {
-                            mesh.scale.x = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.x
-                            mesh.scale.y = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.y
-                            mesh.scale.z = easeOutBack(interpolator, 0, 1, 1) * mesh.originalScale.z
+                            mesh.scale.x = transformedInterpolator * mesh.originalScale.x
+                            mesh.scale.y = transformedInterpolator * mesh.originalScale.y
+                            mesh.scale.z = transformedInterpolator * mesh.originalScale.z
                         }
 
                         if (interpolator === 1)
@@ -110,17 +117,21 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 transitionOut: {
                     time: {
                         total: 600,
-                        elapsed: 0
+                        elapsed: 0,
+                        transferFunction: interpolator => {
+                            return easeOutExpo(interpolator, 0, 1, 1)
+                        }
                     },
                     callback: (tslf, mesh) => {
                         mesh.animation.transitionOut.time.elapsed += tslf
                         const interpolator = Math.min(mesh.animation.transitionOut.time.elapsed / mesh.animation.transitionOut.time.total, 1)
+                        const transformedInterpolator = mesh.animation.transitionOut.time.transferFunction(interpolator)
                         if (mesh instanceof THREE.Light) {
-                            mesh.intensity = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalIntensity
+                            mesh.intensity = (1 - transformedInterpolator) * mesh.originalIntensity
                         } else {
-                            mesh.scale.x = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.x
-                            mesh.scale.y = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.y
-                            mesh.scale.z = (1 - easeOutExpo(interpolator, 0, 1, 1)) * mesh.originalScale.z
+                            mesh.scale.x = (1 - transformedInterpolator) * mesh.originalScale.x
+                            mesh.scale.y = (1 - transformedInterpolator) * mesh.originalScale.y
+                            mesh.scale.z = (1 - transformedInterpolator) * mesh.originalScale.z
                         }
 
                         if (interpolator === 1)
@@ -130,7 +141,10 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 transitionShared: {
                     time: {
                         total: 600,
-                        elapsed: 0
+                        elapsed: 0,
+                        transferFunction: interpolator => {
+                            return easeOutExpo(interpolator, 0, 1, 1)
+                        }
                     },
                     screen: {
                         from: null,
@@ -144,6 +158,7 @@ const initializeObject = (object, name, listenersOnly = false) => {
                             mesh.listeners.sharedScreenTransitionFinished.forEach(listener => { listener() })
 
                         const interpolator = Math.min(mesh.animation.transitionShared.time.elapsed / mesh.animation.transitionShared.time.total, 1)
+                        const transformedInterpolator = mesh.animation.transitionShared.time.transferFunction(interpolator)
                         if (mesh.animation.transitionShared.screen.from.sharedObjectConfigs[mesh.name]) {
                             let fromConfig, toConfig
                             if (mesh.animation.transitionShared.from.sharedObjectConfigs[mesh.name][mesh.transition.character]) {
@@ -157,14 +172,14 @@ const initializeObject = (object, name, listenersOnly = false) => {
                                 toConfig = mesh.animation.transitionShared.to.sharedObjectConfigs[mesh.name]
                             }
                             if (fromConfig.position && toConfig.position)
-                                mesh.position.lerpVectors(fromConfig.position, toConfig.position, easeOutExpo(interpolator, 0, 1, 1))
+                                mesh.position.lerpVectors(fromConfig.position, toConfig.position, transformedInterpolator)
                             if (fromConfig.scale && toConfig.scale)
-                                mesh.scale.lerpVectors(fromConfig.scale, toConfig.scale, easeOutExpo(interpolator, 0, 1, 1))
+                                mesh.scale.lerpVectors(fromConfig.scale, toConfig.scale, transformedInterpolator)
                             if (fromConfig.rotation && toConfig.rotation)
-                                THREE.Quaternion.slerp(fromConfig.rotation, toConfig.rotation, mesh.quaternion, easeOutExpo(interpolator, 0, 1, 1))
+                                THREE.Quaternion.slerp(fromConfig.rotation, toConfig.rotation, mesh.quaternion, transformedInterpolator)
                             if (fromConfig.intensity && toConfig.intensity) {
                                 const intensityDelta = toConfig.intensity - fromConfig.intensity
-                                mesh.intensity = fromConfig.intensity + intensityDelta * easeOutExpo(interpolator, 0, 1, 1)
+                                mesh.intensity = fromConfig.intensity + intensityDelta * transformedInterpolator
                             }
                         }
                         if (interpolator === 1) {
