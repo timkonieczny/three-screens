@@ -115,7 +115,7 @@ class Screen {
 
     transitionOut(nextScreen, activeCharacter) {
         const checkObjectsAndFinishTransitionOut = _ => {
-            if (this.numberOfReadyNonSharedObjects == this.nonSharedObjects.length) {
+            if (this.numberOfReadyNonSharedObjects === this.nonSharedObjects.length) {
                 this.numberOfReadyNonSharedObjects = 0
                 this.listeners.transitionOutFinished.forEach(listener => {
                     listener(this)
@@ -150,12 +150,8 @@ class Screen {
                 object.scale.copy(object.originalScale)
                 object.removeEventListener("update", object.animation.transitionOut.callback)
                 this.scene.remove(object)
-
-                if (this.scene.children.length == this.sharedObjects.length) {
-                    this.listeners.transitionOutFinished.forEach(listener => {
-                        listener(this)
-                    })
-                }
+                this.numberOfReadyNonSharedObjects++
+                checkObjectsAndFinishTransitionOut()
             }
             object.addEventListener("transitionOutFinished", onTransitionOutFinished)
         })
