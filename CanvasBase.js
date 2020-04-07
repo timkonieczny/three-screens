@@ -74,13 +74,19 @@ class CanvasBase {
     onResize() {
         // FIXME: viewport size should be inferred from canvas
         this.renderer.setSize(window.innerWidth, window.innerHeight, false)
+        if (this.composer)
+            this.composer.setSize(window.innerWidth, window.innerHeight, false)
+
         this.camera.aspect = this.canvas.width / this.canvas.height
         this.camera.updateProjectionMatrix()
     }
 
     update(tslf) {
         this.screenManager.update(tslf)
-        this.renderer.render(this.scene, this.camera)
+        if (this.composer)
+            this.composer.render(tslf)
+        else
+            this.renderer.render(this.scene, this.camera)
     }
 
     addEventListener(type, listener) {
