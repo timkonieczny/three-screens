@@ -57,8 +57,8 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 hover: false
             }
 
-            if (mesh instanceof THREE.Light)
-                mesh.originalIntensity = mesh.intensity
+            if (object instanceof THREE.Light)
+                object.originalIntensity = object.intensity
 
             object.inertia = {
                 speed: new THREE.Vector3(),
