@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import { easeOutBack, easeOutExpo } from 'js-easing-functions';
+import { easeOutExpo } from 'js-easing-functions';
 
 const initializeObject = (object, name, listenersOnly = false) => {
 
