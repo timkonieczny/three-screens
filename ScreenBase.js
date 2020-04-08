@@ -1,6 +1,6 @@
 import * as THREE from "three"
 
-class Screen {
+class ScreenBase {
     constructor(scene, camera) {
         this.objects = new Map()
         this.scene = scene
@@ -252,4 +252,4 @@ class Screen {
     }
 }
 
-export default Screen
+export default ScreenBase
