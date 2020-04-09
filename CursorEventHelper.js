@@ -151,12 +151,20 @@ class CursorEventHelper {
     }
 
     addEventListener(type, listener) {
-        this.listeners[type].push(listener)
+        if (!this.hasEventListener(type, listener)) {
+            this.listeners[type].push(listener)
+            return true
+        } else
+            return false
     }
 
     removeEventListener(type, listener) {
-        const index = this.listeners[type].indexOf(listener)
-        this.listeners[type].splice(index, 1)
+        if (this.hasEventListener(type, listener)) {
+            const index = this.listeners[type].indexOf(listener)
+            this.listeners[type].splice(index, 1)
+            return true
+        } else
+            return false
     }
 
     hasEventListener(type, listener) {
