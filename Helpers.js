@@ -19,7 +19,9 @@ const initializeObject = (object, name, listenersOnly = false) => {
         }
 
         object.addEventListener = (type, listener) => {
-            object.listeners[type].push(listener)
+            if (!object.hasEventListener(type, listener)) {
+                object.listeners[type].push(listener)
+            }
         }
 
         // Adds event listener after a frame was rendered
@@ -31,8 +33,10 @@ const initializeObject = (object, name, listenersOnly = false) => {
         }
 
         object.removeEventListener = (type, listener) => {
-            const index = object.listeners[type].indexOf(listener)
-            object.listeners[type].splice(index, 1)
+            if (object.hasEventListener(type, listener)) {
+                const index = object.listeners[type].indexOf(listener)
+                object.listeners[type].splice(index, 1)
+            }
         }
 
         // Removes event listener after a frame was rendered
