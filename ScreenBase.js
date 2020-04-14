@@ -56,19 +56,12 @@ class ScreenBase {
         this.nonSharedObjects.forEach(object => {
             this.scene.add(object)
             const onTransitionInFinished = _ => {
-                object.removeEventListener("update", object.animation.transitionIn.callback)
-
-                object.removeEventListener(
-                    "transitionInFinished",
-                    onTransitionInFinished
-                )
+                object.removeEventListenerSync("update", object.animation.transitionIn.callback)
+                object.removeEventListenerSync("transitionInFinished", onTransitionInFinished)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionIn()
             }
-            object.addEventListener(
-                "transitionInFinished",
-                onTransitionInFinished
-            )
+            object.addEventListener("transitionInFinished", onTransitionInFinished)
             object.animation.transitionIn.time.elapsed = 0
             if (this.sharedObjectConfigs[object.name]) {
                 if (
@@ -145,10 +138,10 @@ class ScreenBase {
             object.addEventListener("update", object.animation.transitionOut.callback)
 
             const onTransitionOutFinished = _ => {
-                object.removeEventListener("transitionOutFinished", onTransitionOutFinished)
+                object.removeEventListenerSync("transitionOutFinished", onTransitionOutFinished)
                 object.visible = false
                 object.scale.copy(object.originalScale)
-                object.removeEventListener("update", object.animation.transitionOut.callback)
+                object.removeEventListenerSync("update", object.animation.transitionOut.callback)
                 this.scene.remove(object)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionOut()
@@ -164,14 +157,11 @@ class ScreenBase {
                 ? activeCharacter.name
                 : activeCharacter
             const onTransitionFinished = _ => {
-                object.removeEventListener("update", object.animation.transitionShared.callback)
-                object.removeEventListener("transitionInFinished", onTransitionFinished)
+                object.removeEventListenerSync("update", object.animation.transitionShared.callback)
+                object.removeEventListenerSync("transitionInFinished", onTransitionFinished)
             }
             object.addEventListener("transitionInFinished", onTransitionFinished)
-            object.addEventListener(
-                "update",
-                object.animation.transitionShared.callback
-            )
+            object.addEventListener("update", object.animation.transitionShared.callback)
         })
         this.camera.transition.time.elapsed = 0
         this.camera.transition.screen.from = this
@@ -206,6 +196,11 @@ class ScreenBase {
             object.listeners.update.forEach(listener => {
                 listener(tslf, object)
             })
+            object.listeners.afterUpdate.forEach(listener => {
+                listener(object)
+            })
+            object.listeners.afterUpdate = []
+
         })
         this.camera.listeners.update.forEach(listener => {
             listener(tslf, this.camera)
