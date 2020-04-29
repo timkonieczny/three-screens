@@ -74,6 +74,14 @@ const initializeObject = (object, name, listenersOnly = false) => {
             object.isSnappingToOriginalPosition = false
             object.isSnappingToCursor = false
 
+            const setTopLevelParent = (object, topLevelObject) => {
+                object.topLevelParent = topLevelObject
+                object.children.forEach(child => {
+                    setTopLevelParent(child, topLevelObject)
+                })
+            }
+            setTopLevelParent(object, object)
+
             object.hasChildWithListener = {
                 click: false,
                 hover: false
@@ -264,6 +272,7 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 boundingBoxMesh.position.copy(object.position)
                 boundingBoxMesh.material.visible = false
                 object.attach(boundingBoxMesh)
+                boundingBoxMesh.topLevelParent = object
             }
 
             object.addEventListenerToChildren = (type, eventListener, addToHighestParent = false) => {
@@ -407,10 +416,10 @@ const getTextMesh = (text, name, fontConfiguration, textTransform, attachBoundin
             emissive: new THREE.Color(0xffffff),
             emissiveIntensity: .1
         }))
-    initializeObject(mesh, name)
     mesh.scale.copy(textTransform.scale)
     if (textTransform.position)
         mesh.position.copy(textTransform.position)
+    initializeObject(mesh, name)
     if (attachBoundingBox)
         mesh.attachBoundingBox()
     return mesh

@@ -1,8 +1,12 @@
+import * as THREE from "three"
+
 class CursorEventHelper {
 
     constructor(target) {
 
         this.target = target
+
+        this.raycaster = new THREE.Raycaster()
 
         this.listeners = {
 
@@ -170,6 +174,17 @@ class CursorEventHelper {
     hasEventListener(type, listener) {
         const index = this.listeners[type].indexOf(listener)
         return index !== -1
+    }
+
+    detectClickOnObject(coords, screen) {
+        this.raycaster.setFromCamera(coords, screen.camera)
+
+        const objects = [...screen.objects.values()].filter(object => object.topLevelParent.listeners.click.length > 0)
+
+        const intersections = this.raycaster.intersectObjects(objects, true)
+
+        if (intersections.length > 0)
+            intersections[0].object.topLevelParent.listeners.click.forEach(listener => { listener() })
     }
 }
 
