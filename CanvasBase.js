@@ -1,9 +1,8 @@
 import * as THREE from "three"
 import { initializeCamera } from "./Helpers"
-import ScreenManager from "./ScreenManager"
 
 class CanvasBase {
-    constructor(canvas, camera, renderer, meshHolder) {
+    constructor(canvas, camera, renderer, meshHolder, activeScreen) {
         this.listeners = {
             ready: []
         }
@@ -16,6 +15,11 @@ class CanvasBase {
         this.meshesLoaded = false
 
         this.meshHolder = meshHolder
+
+        this.isTransitionOutInProgress = false
+        this.isTransitionInInProgress = false
+        this.nextScreen = null
+        if (activeScreen) this.transitionTo(activeScreen)
     }
 
     initialize() {
@@ -62,9 +66,7 @@ class CanvasBase {
         })
         if (!areAllScreensInitialized) return
 
-        this.screenManager = new ScreenManager()
-
-        this.screenManager.uploadObjects(Object.values(this.screens), this.renderer, this.camera)
+        this.uploadObjects(Object.values(this.screens), this.renderer, this.camera)
 
         this.listeners.ready.forEach(listener => {
             listener(this)
@@ -82,7 +84,8 @@ class CanvasBase {
     }
 
     update(tslf) {
-        this.screenManager.update(tslf)
+        this.activeScreen.update(tslf)
+
         if (this.composer)
             this.composer.render(tslf)
         else
@@ -101,6 +104,71 @@ class CanvasBase {
     hasEventListener(type, listener) {
         const index = this.listeners[type].indexOf(listener)
         return index !== -1
+    }
+
+    uploadObjects(screens, renderer, camera) {
+        screens.forEach(screen => {
+            screen.objects.forEach(object => {
+                object.wasVisible = object.visible
+                object.visible = true
+                screens[0].scene.add(object)
+            })
+
+        })
+        renderer.render(screens[0].scene, camera)
+        renderer.clear()
+        screens.forEach(screen => {
+            screen.objects.forEach(object => {
+                screens[0].scene.remove(object)
+                object.visible = object.wasVisible
+                object.wasVisible = undefined
+            })
+        })
+    }
+
+    transitionTo(screen, activeCharacter = null) {
+        this.nextScreen = screen
+        if (this.isTransitionInInProgress)
+            this.activeScreen.nonSharedObjects.forEach(object => {
+                object.listeners.transitionInFinished.forEach(listener => {
+                    listener(object)
+                })
+            })
+        if (!this.isTransitionOutInProgress) {
+            this.isTransitionOutInProgress = true
+            const onTransitionOutFinished = _ => {
+                const previousScreen = this.activeScreen
+                this.activeScreen = this.nextScreen
+                this.activeScreen.addEventListener("transitionInFinished", onTransitionInFinished)
+                this.isTransitionInInProgress = true
+                this.activeScreen.transitionIn(previousScreen, activeCharacter)
+                if (previousScreen)
+                    previousScreen.removeEventListener(
+                        "transitionOutFinished",
+                        onTransitionOutFinished
+                    )
+                this.isTransitionOutInProgress = false
+            }
+            const onTransitionInFinished = _ => {
+                // This just needs to be called, so that shared objects
+                // that weren't shared with the previous screen, but with
+                // screens before that, are set visible again. They were
+                // set invisible after they were transitioned out.
+
+                this.activeScreen.removeEventListener(
+                    "transitionInFinished",
+                    onTransitionInFinished
+                )
+                this.isTransitionInInProgress = false
+            }
+
+            if (this.activeScreen) {
+                this.activeScreen.addEventListener("transitionOutFinished", onTransitionOutFinished)
+                this.activeScreen.transitionOut(this.nextScreen, activeCharacter)
+            } else {
+                onTransitionOutFinished()
+            }
+        }
     }
 }
 
