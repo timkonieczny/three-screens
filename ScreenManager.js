@@ -1,3 +1,5 @@
+// TODO: merge with CanvasBase
+
 class ScreenManager {
     constructor(activeScreen) {
         this.isTransitionOutInProgress = false
@@ -55,10 +57,6 @@ class ScreenManager {
                 // screens before that, are set visible again. They were
                 // set invisible after they were transitioned out.
 
-                this.activeScreen.objects.forEach(object => {
-                    if (object.visibleOverride === null) object.visible = true
-                    else object.visible = object.visibleOverride
-                })
                 this.activeScreen.removeEventListener(
                     "transitionInFinished",
                     onTransitionInFinished

@@ -54,52 +54,35 @@ class ScreenBase {
         checkObjectsAndFinishTransitionIn()
 
         this.nonSharedObjects.forEach(object => {
+
+            // FIXME: Fix warnings by moving scene.add to after scene rendering 
+
             this.scene.add(object)
-            const onTransitionInFinished = _ => {
-                object.removeEventListenerSync("update", object.animation.transitionIn.callback)
-                object.removeEventListenerSync("transitionInFinished", onTransitionInFinished)
+            const onTransitionInFinished = (animation, mesh) => {
+                mesh.removeEventListenerSync("update", animation.callbackBound)
+                animation.removeEventListener("complete", onTransitionInFinished)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionIn()
             }
-            object.addEventListener("transitionInFinished", onTransitionInFinished)
+            object.animation.transitionIn.addEventListener("complete", onTransitionInFinished)
             object.animation.transitionIn.time.elapsed = 0
+            object.animation.transitionIn.to.scale.copy(object.scale)
             if (this.sharedObjectConfigs[object.name]) {
-                if (
-                    activeCharacter &&
-                    this.sharedObjectConfigs[object.name][activeCharacter.name]
-                ) {
-                    if (
-                        this.sharedObjectConfigs[object.name][
-                            activeCharacter.name
-                        ].position
-                    )
-                        object.position.copy(
-                            this.sharedObjectConfigs[object.name][
-                                activeCharacter.name
-                            ].position
-                        )
-                    if (
-                        this.sharedObjectConfigs[object.name][
-                            activeCharacter.name
-                        ].scale
-                    )
-                        object.scale.copy(
-                            this.sharedObjectConfigs[object.name][
-                                activeCharacter.name
-                            ].scale
-                        )
-                }
                 if (this.sharedObjectConfigs[object.name].position)
-                    object.position.copy(
-                        this.sharedObjectConfigs[object.name].position
-                    )
+                    object.animation.transitionIn.to.position.copy(
+                        this.sharedObjectConfigs[object.name].position)
                 if (this.sharedObjectConfigs[object.name].scale)
-                    object.scale.copy(
-                        this.sharedObjectConfigs[object.name].scale
-                    )
+                    object.animation.transitionIn.to.scale.copy(
+                        this.sharedObjectConfigs[object.name].scale)
             }
-            object.originalScale = object.scale.clone()
-            object.addEventListener("update", object.animation.transitionIn.callback)
+
+            if (object.visibleOverride === null)
+                object.visible = true
+            else
+                object.visible = object.visibleOverride
+
+            object.animation.transitionIn.init(object)
+            object.addEventListener("update", object.animation.transitionIn.callbackBound)
         })
         this.listeners.transitionInStarted.forEach(listener => {
             listener(this)
@@ -135,18 +118,21 @@ class ScreenBase {
         this.nonSharedObjects.forEach(object => {
             object.animation.transitionOut.time.elapsed = 0
             object.originalScale = object.scale.clone()
-            object.addEventListener("update", object.animation.transitionOut.callback)
+            object.animation.transitionOut.from.scale.copy(object.scale)
+            object.animation.transitionOut.init(object)
 
-            const onTransitionOutFinished = _ => {
-                object.removeEventListenerSync("transitionOutFinished", onTransitionOutFinished)
+            object.addEventListener("update", object.animation.transitionOut.callbackBound)
+
+            const onTransitionOutFinished = (animation, mesh) => {
+                animation.removeEventListener("complete", onTransitionOutFinished)
                 object.visible = false
-                object.scale.copy(object.originalScale)
-                object.removeEventListenerSync("update", object.animation.transitionOut.callback)
+                object.scale.copy(object.animation.transitionOut.from.scale)
+                object.removeEventListenerSync("update", animation.callbackBound)
                 this.scene.remove(object)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionOut()
             }
-            object.addEventListener("transitionOutFinished", onTransitionOutFinished)
+            object.animation.transitionOut.addEventListener("complete", onTransitionOutFinished)
         })
 
         this.sharedObjects.forEach(object => {
@@ -200,7 +186,6 @@ class ScreenBase {
                 listener(object)
             })
             object.listeners.afterUpdate = []
-
         })
         this.camera.listeners.update.forEach(listener => {
             listener(tslf, this.camera)

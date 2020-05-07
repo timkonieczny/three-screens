@@ -1,5 +1,6 @@
 import * as THREE from "three"
 import { easeOutExpo } from 'js-easing-functions';
+import Animation from "./Animation";
 
 const initializeObject = (object, name, listenersOnly = false) => {
 
@@ -12,6 +13,9 @@ const initializeObject = (object, name, listenersOnly = false) => {
             transitionOutFinished: [],
             sharedScreenTransitionFinished: [],
             click: [],
+            down: [],
+            drag: [],
+            up: [],
             hover: [],
             update: [],
             // TODO: add afterUpdate and sync functions to camera, screens and canvases as well
@@ -61,7 +65,7 @@ const initializeObject = (object, name, listenersOnly = false) => {
         if (!listenersOnly) {
 
             object.visible = false
-            object.visibleOverride = null
+            object.visibleOverride = null   // TODO: Redundant. Visibility can be set in transitionInStarted. Remove.
 
             object.defaultPosition = new THREE.Vector3()
             object.defaultRotation = new THREE.Euler()
@@ -114,61 +118,9 @@ const initializeObject = (object, name, listenersOnly = false) => {
             }
 
             object.animation = {
-                transitionIn: {
-                    time: {
-                        total: 600,
-                        elapsed: 0,
-                        transferFunction: interpolator => {
-                            return easeOutExpo(interpolator, 0, 1, 1)
-                        }
-                    },
-                    callback: (tslf, mesh) => {
-                        mesh.animation.transitionIn.time.elapsed += tslf
-
-                        if (mesh.visibleOverride === null)
-                            mesh.visible = true
-                        else
-                            mesh.visible = mesh.visibleOverride
-
-                        const interpolator = Math.min(mesh.animation.transitionIn.time.elapsed / mesh.animation.transitionIn.time.total, 1)
-                        const transformedInterpolator = mesh.animation.transitionIn.time.transferFunction(interpolator)
-                        if (mesh instanceof THREE.Light) {
-                            mesh.intensity = transformedInterpolator * mesh.originalIntensity
-                        } else {
-                            mesh.scale.x = transformedInterpolator * mesh.originalScale.x
-                            mesh.scale.y = transformedInterpolator * mesh.originalScale.y
-                            mesh.scale.z = transformedInterpolator * mesh.originalScale.z
-                        }
-
-                        if (interpolator === 1)
-                            mesh.listeners.transitionInFinished.forEach(listener => { listener(mesh) })
-                    }
-                },
-                transitionOut: {
-                    time: {
-                        total: 600,
-                        elapsed: 0,
-                        transferFunction: interpolator => {
-                            return easeOutExpo(interpolator, 0, 1, 1)
-                        }
-                    },
-                    callback: (tslf, mesh) => {
-                        mesh.animation.transitionOut.time.elapsed += tslf
-                        const interpolator = Math.min(mesh.animation.transitionOut.time.elapsed / mesh.animation.transitionOut.time.total, 1)
-                        const transformedInterpolator = mesh.animation.transitionOut.time.transferFunction(interpolator)
-                        if (mesh instanceof THREE.Light) {
-                            mesh.intensity = (1 - transformedInterpolator) * mesh.originalIntensity
-                        } else {
-                            mesh.scale.x = (1 - transformedInterpolator) * mesh.originalScale.x
-                            mesh.scale.y = (1 - transformedInterpolator) * mesh.originalScale.y
-                            mesh.scale.z = (1 - transformedInterpolator) * mesh.originalScale.z
-                        }
-
-                        if (interpolator === 1)
-                            mesh.listeners.transitionOutFinished.forEach(listener => { listener(mesh) })
-                    }
-                },
-                transitionShared: {
+                transitionIn: new Animation(),
+                transitionOut: new Animation(),
+                transitionShared: {     // TODO: Use new Animation() for shared transitions
                     time: {
                         total: 600,
                         elapsed: 0,
@@ -219,6 +171,9 @@ const initializeObject = (object, name, listenersOnly = false) => {
                     }
                 }
             }
+
+            object.animation.transitionIn.callbackBound = object.animation.transitionIn.callback.bind(object.animation.transitionIn)
+            object.animation.transitionOut.callbackBound = object.animation.transitionOut.callback.bind(object.animation.transitionOut)
 
             object.isBeingDragged = false
             object.sharedBetween = new Map()
@@ -402,7 +357,7 @@ const moveObjectTransformationOriginToCenter = geometry => {
     const temp = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: '#ffffff' }))
     const boundingBox = new THREE.Box3().setFromObject(temp);
     const centerMatrix = new THREE.Matrix4().makeTranslation(-boundingBox.max.x / 2, -boundingBox.max.y / 2, 0)
-    geometry.applyMatrix(centerMatrix)
+    geometry.applyMatrix4(centerMatrix)
     return geometry
 }
 

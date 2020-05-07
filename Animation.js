@@ -1,12 +1,12 @@
 import * as THREE from "three"
 
 class Animation {
-    constructor() {
+    constructor(loop = false) {
         this.time = {
             total: 1000,
             elapsed: 0,
             transferFunction: (elapsed, total) => {
-                return elapsed / total
+                return Math.min(1, elapsed / total)
             }
         }
         this.from = {
@@ -34,9 +34,13 @@ class Animation {
         this.listeners = {
             complete: []
         }
+        this.loop = loop
+
+        // TODO: Create callbackBound in constructor. Rename update()
     }
 
     init(mesh) {
+        this.time.elapsed = 0
         this.last.position.copy(this.from.position)
         this.last.scale.copy(this.from.scale)
         if (!this.from.position.equals(this.to.position))
@@ -46,15 +50,16 @@ class Animation {
     }
 
     reset() {
-        this.time.elapsed = 0
+        if (this.loop)
+            this.time.elapsed %= this.time.total
+        else
+            this.time.elapsed = 0
     }
 
     callback(tslf, mesh) {
         this.time.elapsed += tslf
         const interpolator = this.time.transferFunction(this.time.elapsed, this.time.total)
 
-
-        // TODO: use deltas
         if (!this.from.position.equals(this.to.position)) {
             this.current.position.lerpVectors(this.from.position, this.to.position, interpolator)
             this.delta.position.subVectors(this.current.position, this.last.position)
@@ -66,7 +71,6 @@ class Animation {
             this.delta.scale.subVectors(this.current.scale, this.last.scale)
             mesh.scale.add(this.delta.scale)
             this.last.scale.copy(this.current.scale)
-            // mesh.scale.lerpVectors(this.from.scale, this.to.scale, interpolator)
         }
         if (!this.from.quaternion.equals(this.to.quaternion)) {
             THREE.Quaternion.slerp(this.from.quaternion, this.to.quaternion, mesh.quaternion, interpolator)

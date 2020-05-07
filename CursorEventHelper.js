@@ -176,6 +176,7 @@ class CursorEventHelper {
         return index !== -1
     }
 
+    // TODO: Merge detection classes. Rename fireObjectListeners
     detectClickOnObject(coords, screen) {
         this.raycaster.setFromCamera(coords, screen.camera)
 
@@ -185,6 +186,19 @@ class CursorEventHelper {
 
         if (intersections.length > 0)
             intersections[0].object.topLevelParent.listeners.click.forEach(listener => { listener() })
+    }
+
+    detectDownOnObject(event, screen) {
+        this.raycaster.setFromCamera(event.gl, screen.camera)
+
+        const objects = [...screen.objects.values()].filter(object => object.topLevelParent.listeners.down.length > 0)
+
+        const intersections = this.raycaster.intersectObjects(objects, true)
+
+        if (intersections.length > 0) {
+            const object = intersections[0].object.topLevelParent
+            object.listeners.down.forEach(listener => { listener(event, object) })
+        }
     }
 }
 
