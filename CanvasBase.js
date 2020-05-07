@@ -4,7 +4,8 @@ import { initializeCamera } from "./Helpers"
 class CanvasBase {
     constructor(canvas, camera, renderer, meshHolder, activeScreen) {
         this.listeners = {
-            ready: []
+            ready: [],
+            afterRender: []
         }
 
         this.canvas = canvas
@@ -90,9 +91,11 @@ class CanvasBase {
             this.composer.render(tslf)
         else
             this.renderer.render(this.scene, this.camera)
+
+        this.listeners.afterRender.forEach(listener => { listener(this) })
     }
 
-    addEventListener(type, listener) {
+    addEventListener(type, listener) {  // TODO: add check
         this.listeners[type].push(listener)
     }
 
@@ -109,8 +112,12 @@ class CanvasBase {
     uploadObjects(screens, renderer, camera) {
         screens.forEach(screen => {
             screen.objects.forEach(object => {
-                object.wasVisible = object.visible
-                object.visible = true
+                object.traverse(child => {
+                    child.wasVisible = child.visible
+                    child.visible = true
+                    child.originalScale = child.scale.clone()
+                    child.scale.set(1, 1, 1)
+                })
                 screens[0].scene.add(object)
             })
 
@@ -120,8 +127,12 @@ class CanvasBase {
         screens.forEach(screen => {
             screen.objects.forEach(object => {
                 screens[0].scene.remove(object)
-                object.visible = object.wasVisible
-                object.wasVisible = undefined
+                object.traverse(child => {
+                    child.visible = child.wasVisible
+                    child.wasVisible = undefined
+                    child.scale.copy(child.originalScale)
+                    child.originalScale = undefined
+                })
             })
         })
     }
@@ -137,17 +148,18 @@ class CanvasBase {
         if (!this.isTransitionOutInProgress) {
             this.isTransitionOutInProgress = true
             const onTransitionOutFinished = _ => {
+                if (previousScreen)
+                    previousScreen.removeEventListener("transitionOutFinished", onTransitionOutFinished)
                 const previousScreen = this.activeScreen
                 this.activeScreen = this.nextScreen
                 this.activeScreen.addEventListener("transitionInFinished", onTransitionInFinished)
-                this.isTransitionInInProgress = true
-                this.activeScreen.transitionIn(previousScreen, activeCharacter)
-                if (previousScreen)
-                    previousScreen.removeEventListener(
-                        "transitionOutFinished",
-                        onTransitionOutFinished
-                    )
                 this.isTransitionOutInProgress = false
+                this.startTransitionIn = _ => {
+                    this.isTransitionInInProgress = true
+                    this.activeScreen.transitionIn(previousScreen, activeCharacter)
+                    this.removeEventListener("afterRender", this.startTransitionIn)
+                }
+                this.addEventListener("afterRender", this.startTransitionIn)
             }
             const onTransitionInFinished = _ => {
                 // This just needs to be called, so that shared objects

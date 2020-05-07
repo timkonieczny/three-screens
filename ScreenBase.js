@@ -19,7 +19,7 @@ class ScreenBase {
         this.sharedObjectConfigs = {}
     }
 
-    transitionIn(previousScreen, activeCharacter) {
+    transitionIn(previousScreen) {
         const checkObjectsAndFinishTransitionIn = _ => {
             if (
                 this.numberOfReadyNonSharedObjects ==
