@@ -172,9 +172,6 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 }
             }
 
-            object.animation.transitionIn.callbackBound = object.animation.transitionIn.callback.bind(object.animation.transitionIn)
-            object.animation.transitionOut.callbackBound = object.animation.transitionOut.callback.bind(object.animation.transitionOut)
-
             object.isBeingDragged = false
             object.sharedBetween = new Map()
             object.entryPointScreens = []

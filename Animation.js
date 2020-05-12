@@ -36,7 +36,7 @@ class Animation {
         }
         this.loop = loop
 
-        // TODO: Create callbackBound in constructor. Rename update()
+        this.update = this.callback.bind(this)
     }
 
     init(mesh) {

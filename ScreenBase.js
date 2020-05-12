@@ -59,7 +59,7 @@ class ScreenBase {
 
             this.scene.add(object)
             const onTransitionInFinished = (animation, mesh) => {
-                mesh.removeEventListenerSync("update", animation.callbackBound)
+                mesh.removeEventListenerSync("update", animation.update)
                 animation.removeEventListener("complete", onTransitionInFinished)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionIn()
@@ -82,7 +82,7 @@ class ScreenBase {
                 object.visible = object.visibleOverride
 
             object.animation.transitionIn.init(object)
-            object.addEventListener("update", object.animation.transitionIn.callbackBound)
+            object.addEventListener("update", object.animation.transitionIn.update)
         })
         this.listeners.transitionInStarted.forEach(listener => {
             listener(this)
@@ -121,13 +121,13 @@ class ScreenBase {
             object.animation.transitionOut.from.scale.copy(object.scale)
             object.animation.transitionOut.init(object)
 
-            object.addEventListener("update", object.animation.transitionOut.callbackBound)
+            object.addEventListener("update", object.animation.transitionOut.update)
 
             const onTransitionOutFinished = (animation, mesh) => {
                 animation.removeEventListener("complete", onTransitionOutFinished)
                 object.visible = false
                 object.scale.copy(object.animation.transitionOut.from.scale)
-                object.removeEventListenerSync("update", animation.callbackBound)
+                object.removeEventListenerSync("update", animation.update)
                 this.scene.remove(object)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionOut()
