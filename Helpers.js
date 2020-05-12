@@ -64,9 +64,6 @@ const initializeObject = (object, name, listenersOnly = false) => {
 
         if (!listenersOnly) {
 
-            object.visible = false
-            object.visibleOverride = null   // TODO: Redundant. Visibility can be set in transitionInStarted. Remove.
-
             object.defaultPosition = new THREE.Vector3()
             object.defaultRotation = new THREE.Euler()
 
