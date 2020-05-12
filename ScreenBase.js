@@ -182,13 +182,18 @@ class ScreenBase {
             object.listeners.update.forEach(listener => {
                 listener(tslf, object)
             })
+        })
+        this.camera.listeners.update.forEach(listener => {
+            listener(tslf, this.camera)
+        })
+    }
+
+    afterRender() {
+        this.objects.forEach(object => {
             object.listeners.afterUpdate.forEach(listener => {
                 listener(object)
             })
             object.listeners.afterUpdate = []
-        })
-        this.camera.listeners.update.forEach(listener => {
-            listener(tslf, this.camera)
         })
     }
 
