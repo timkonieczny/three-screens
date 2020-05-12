@@ -92,8 +92,6 @@ class CanvasBase {
         else
             this.renderer.render(this.scene, this.camera)
 
-        this.activeScreen.afterRender()
-
         this.listeners.afterRender.forEach(listener => { listener(this) })
     }
 

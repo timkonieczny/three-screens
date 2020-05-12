@@ -55,11 +55,9 @@ class ScreenBase {
 
         this.nonSharedObjects.forEach(object => {
 
-            // FIXME: Fix warnings by moving scene.add to after scene rendering 
-
             this.scene.add(object)
             const onTransitionInFinished = (animation, mesh) => {
-                mesh.removeEventListenerSync("update", animation.update)
+                mesh.removeEventListener("update", animation.update)
                 animation.removeEventListener("complete", onTransitionInFinished)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionIn()
@@ -127,7 +125,7 @@ class ScreenBase {
                 animation.removeEventListener("complete", onTransitionOutFinished)
                 object.visible = false
                 object.scale.copy(object.animation.transitionOut.from.scale)
-                object.removeEventListenerSync("update", animation.update)
+                object.removeEventListener("update", animation.update)
                 this.scene.remove(object)
                 this.numberOfReadyNonSharedObjects++
                 checkObjectsAndFinishTransitionOut()
@@ -143,8 +141,8 @@ class ScreenBase {
                 ? activeCharacter.name
                 : activeCharacter
             const onTransitionFinished = _ => {
-                object.removeEventListenerSync("update", object.animation.transitionShared.callback)
-                object.removeEventListenerSync("transitionInFinished", onTransitionFinished)
+                object.removeEventListener("update", object.animation.transitionShared.callback)
+                object.removeEventListener("transitionInFinished", onTransitionFinished)
             }
             object.addEventListener("transitionInFinished", onTransitionFinished)
             object.addEventListener("update", object.animation.transitionShared.callback)
@@ -179,21 +177,14 @@ class ScreenBase {
             listener(this, tslf)
         })
         this.objects.forEach(object => {
-            object.listeners.update.forEach(listener => {
-                listener(tslf, object)
-            })
+            if (object.listeners.update.length > 0) {
+                object.listeners.update.slice().forEach(listener => {
+                    listener(tslf, object)
+                })
+            }
         })
         this.camera.listeners.update.forEach(listener => {
             listener(tslf, this.camera)
-        })
-    }
-
-    afterRender() {
-        this.objects.forEach(object => {
-            object.listeners.afterUpdate.forEach(listener => {
-                listener(object)
-            })
-            object.listeners.afterUpdate = []
         })
     }
 

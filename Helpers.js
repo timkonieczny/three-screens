@@ -28,27 +28,11 @@ const initializeObject = (object, name, listenersOnly = false) => {
             }
         }
 
-        // Adds event listener after a frame was rendered
-        // The afterUpdate array is cleared in ScreenBase
-        object.addEventListenerSync = (type, listener) => {
-            object.addEventListener("afterUpdate", object => {
-                object.addEventListener(type, listener)
-            })
-        }
-
         object.removeEventListener = (type, listener) => {
             if (object.hasEventListener(type, listener)) {
                 const index = object.listeners[type].indexOf(listener)
                 object.listeners[type].splice(index, 1)
             }
-        }
-
-        // Removes event listener after a frame was rendered
-        // The afterUpdate array is cleared in ScreenBase
-        object.removeEventListenerSync = (type, listener) => {
-            object.addEventListener("afterUpdate", object => {
-                object.removeEventListener(type, listener)
-            })
         }
 
         object.hasEventListener = (type, listener) => {
