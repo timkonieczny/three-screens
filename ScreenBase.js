@@ -74,11 +74,6 @@ class ScreenBase {
                         this.sharedObjectConfigs[object.name].scale)
             }
 
-            if (object.visibleOverride === null)
-                object.visible = true
-            else
-                object.visible = object.visibleOverride
-
             object.animation.transitionIn.init(object)
             object.addEventListener("update", object.animation.transitionIn.update)
         })
@@ -123,7 +118,6 @@ class ScreenBase {
 
             const onTransitionOutFinished = (animation, mesh) => {
                 animation.removeEventListener("complete", onTransitionOutFinished)
-                object.visible = false
                 object.scale.copy(object.animation.transitionOut.from.scale)
                 object.removeEventListener("update", animation.update)
                 this.scene.remove(object)
