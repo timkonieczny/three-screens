@@ -18,8 +18,8 @@ const initializeObject = (object, name, listenersOnly = false) => {
             up: [],
             hover: [],
             update: [],
-            // TODO: add afterUpdate and sync functions to camera, screens and canvases as well
-            afterUpdate: []
+            // TODO: add afterRender and sync functions to camera, screens and canvases as well
+            afterRender: []
         }
 
         object.addEventListener = (type, listener) => {
@@ -152,6 +152,9 @@ const initializeObject = (object, name, listenersOnly = false) => {
                     }
                 }
             }
+
+            object.animation.transitionIn.time.total = 200
+            object.animation.transitionOut.time.total = 200
 
             object.isBeingDragged = false
             object.sharedBetween = new Map()
