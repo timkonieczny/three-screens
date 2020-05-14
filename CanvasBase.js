@@ -149,9 +149,9 @@ class CanvasBase {
             })
         if (!this.isTransitionOutInProgress) {
             this.isTransitionOutInProgress = true
-            const onTransitionOutFinished = _ => {
-                if (previousScreen)
-                    previousScreen.removeEventListener("transitionOutFinished", onTransitionOutFinished)
+            const onTransitionOutFinished = screen => {
+                if (screen)
+                    screen.removeEventListener("transitionOutFinished", onTransitionOutFinished)
                 const previousScreen = this.activeScreen
                 this.activeScreen = this.nextScreen
                 this.activeScreen.addEventListener("transitionInFinished", onTransitionInFinished)
