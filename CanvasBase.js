@@ -95,6 +95,7 @@ class CanvasBase {
         this.activeScreen.afterRender()
 
         this.listeners.afterRender.forEach(listener => { listener(this) })
+        this.listeners.afterRender = []
     }
 
     addEventListener(type, listener) {  // TODO: add check

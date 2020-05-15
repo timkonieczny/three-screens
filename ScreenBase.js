@@ -183,9 +183,10 @@ class ScreenBase {
     }
 
     afterRender() {
-        this.objects.forEach(object =>
+        this.objects.forEach(object => {
             object.listeners.afterRender.forEach(listener => listener(object))
-        )
+            object.listeners.afterRender = []
+        })
     }
 
     addEventListener(type, listener) {
