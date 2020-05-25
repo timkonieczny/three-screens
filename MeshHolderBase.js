@@ -68,7 +68,7 @@ class MeshHolderBase {
             mesh.animation.model = {
                 mixer: new THREE.AnimationMixer(mesh),
                 actions: new Map(),
-                callback: (tslf, mesh) => {
+                update: (tslf, mesh) => {
                     mesh.animation.model.mixer.update(tslf * 0.001)
                 }
             }
