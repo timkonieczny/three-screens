@@ -1,6 +1,7 @@
 import * as THREE from "three"
-import { easeOutExpo } from 'js-easing-functions';
-import Animation from "./Animation";
+import { easeOutExpo } from 'js-easing-functions'
+import Animation from "./Animation"
+import Easing from 'easing-functions'
 
 const initializeObject = (object, name, listenersOnly = false) => {
 
@@ -105,9 +106,7 @@ const initializeObject = (object, name, listenersOnly = false) => {
                     time: {
                         total: 600,
                         elapsed: 0,
-                        transferFunction: interpolator => {
-                            return easeOutExpo(interpolator, 0, 1, 1)
-                        }
+                        transferFunction: Easing.Cubic.InOut
                     },
                     screen: {
                         from: null,
@@ -153,8 +152,8 @@ const initializeObject = (object, name, listenersOnly = false) => {
                 }
             }
 
-            object.animation.transitionIn.time.total = 200
-            object.animation.transitionOut.time.total = 200
+            object.animation.transitionIn.time.total = 1000
+            object.animation.transitionOut.time.total = 1000
 
             object.isBeingDragged = false
             object.sharedBetween = new Map()
@@ -196,7 +195,7 @@ const initializeObject = (object, name, listenersOnly = false) => {
             }
 
             object.attachBoundingBox = _ => {
-                const boundingBoxGeometry = new THREE.Box3().setFromObject(object);
+                const boundingBoxGeometry = new THREE.Box3().setFromObject(object)
 
                 const boundingBoxMesh = new THREE.Mesh(
                     new THREE.BoxGeometry(
@@ -336,7 +335,7 @@ const getScreenSpacePositionAtZ0 = (normalizedScreenCoords2D, camera) => {
 
 const moveObjectTransformationOriginToCenter = geometry => {
     const temp = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: '#ffffff' }))
-    const boundingBox = new THREE.Box3().setFromObject(temp);
+    const boundingBox = new THREE.Box3().setFromObject(temp)
     const centerMatrix = new THREE.Matrix4().makeTranslation(-boundingBox.max.x / 2, -boundingBox.max.y / 2, 0)
     geometry.applyMatrix4(centerMatrix)
     return geometry

@@ -5,8 +5,8 @@ class Animation {
         this.time = {
             total: 1000,
             elapsed: 0,
-            transferFunction: (elapsed, total) => {
-                return Math.min(1, elapsed / total)
+            transferFunction: (interpolator) => {
+                return Math.min(1, interpolator)
             }
         }
         this.from = {
@@ -58,7 +58,7 @@ class Animation {
 
     callback(tslf, mesh) {
         this.time.elapsed += tslf
-        const interpolator = this.time.transferFunction(this.time.elapsed, this.time.total)
+        const interpolator = this.time.transferFunction(Math.min(1, this.time.elapsed / this.time.total))
 
         if (!this.from.position.equals(this.to.position)) {
             this.current.position.lerpVectors(this.from.position, this.to.position, interpolator)
