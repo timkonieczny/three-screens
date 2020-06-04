@@ -246,47 +246,38 @@ const initializeObject = (object, name, listenersOnly = false) => {
 
 const initializeCamera = camera => {
 
-    camera.transition = {
-        time: {
-            total: 1200,
-            elapsed: 0
-        },
-        screen: {
-            from: null,
-            to: null
-        }
-    }
-
-    camera.updateSharedScreenTransition = (tslf, camera) => {
-        camera.transition.time.elapsed += tslf
-        const interpolator = Math.min(camera.transition.time.elapsed / camera.transition.time.total, 1)
-        const fromConfig = camera.transition.screen.from.sharedObjectConfigs["camera"]
-        const toConfig = camera.transition.screen.to.sharedObjectConfigs["camera"]
-        if (fromConfig && toConfig) {
-            if (fromConfig.position && toConfig.position)
-                camera.position.lerpVectors(fromConfig.position, toConfig.position, easeOutExpo(interpolator, 0, 1, 1))
-            if (fromConfig.rotation && toConfig.rotation)
-                THREE.Quaternion.slerp(fromConfig.rotation, toConfig.rotation, camera.quaternion, easeOutExpo(interpolator, 0, 1, 1))
-            if (fromConfig.fov && toConfig.fov) {
-                const fovDelta = toConfig.fov - fromConfig.fov
-                camera.fov = fromConfig.fov + fovDelta * easeOutExpo(interpolator, 0, 1, 1)
-                camera.updateProjectionMatrix()
+    camera.animation = {
+        transitionShared: {
+            time: {
+                total: 1200,
+                elapsed: 0
+            },
+            screen: {
+                from: null,
+                to: null
+            },
+            callback: (tslf, camera) => {
+                const animation = camera.animation.transitionShared
+                animation.time.elapsed += tslf
+                const interpolator = Math.min(animation.time.elapsed / animation.time.total, 1)
+                const fromConfig = animation.screen.from.sharedObjectConfigs["camera"]
+                const toConfig = animation.screen.to.sharedObjectConfigs["camera"]
+                if (fromConfig && toConfig) {
+                    if (fromConfig.position && toConfig.position)
+                        camera.position.lerpVectors(fromConfig.position, toConfig.position, easeOutExpo(interpolator, 0, 1, 1))
+                    if (fromConfig.rotation && toConfig.rotation)
+                        THREE.Quaternion.slerp(fromConfig.rotation, toConfig.rotation, camera.quaternion, easeOutExpo(interpolator, 0, 1, 1))
+                    if (fromConfig.fov && toConfig.fov) {
+                        const fovDelta = toConfig.fov - fromConfig.fov
+                        camera.fov = fromConfig.fov + fovDelta * easeOutExpo(interpolator, 0, 1, 1)
+                        camera.updateProjectionMatrix()
+                    }
+                }
+                if (interpolator === 1) {
+                    camera.removeEventListener("update", camera.updateSharedScreenTransition)
+                }
             }
         }
-        if (interpolator === 1) {
-            camera.removeEventListener("update", camera.updateSharedScreenTransition)
-        }
-    }
-
-    camera.updateFunctions = []
-
-    camera.addUpdateFunction = updateFunction => {
-        camera.updateFunctions.push(updateFunction)
-    }
-
-    camera.removeUpdateFunction = updateFunction => {
-        const index = camera.updateFunctions.indexOf(updateFunction)
-        camera.updateFunctions.splice(index, 1)
     }
 
     camera.listeners = {

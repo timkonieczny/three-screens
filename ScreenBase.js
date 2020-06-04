@@ -141,12 +141,12 @@ class ScreenBase {
             object.addEventListener("transitionInFinished", onTransitionFinished)
             object.addEventListener("update", object.animation.transitionShared.callback)
         })
-        this.camera.transition.time.elapsed = 0
-        this.camera.transition.screen.from = this
-        this.camera.transition.screen.to = nextScreen
+        this.camera.animation.transitionShared.time.elapsed = 0
+        this.camera.animation.transitionShared.screen.from = this
+        this.camera.animation.transitionShared.screen.to = nextScreen
         this.camera.addEventListener(
             "update",
-            this.camera.updateSharedScreenTransition
+            this.camera.animation.transitionShared.callback
         )
     }
 
