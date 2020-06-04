@@ -13,12 +13,12 @@ class Animation {
         this.from = {
             position: new THREE.Vector3(),
             scale: new THREE.Vector3(),
-            quaternion: new THREE.Vector3()
+            quaternion: new THREE.Quaternion()
         }
         this.to = {
             position: new THREE.Vector3(),
             scale: new THREE.Vector3(),
-            quaternion: new THREE.Vector3()
+            quaternion: new THREE.Quaternion()
         }
         this.last = {
             position: new THREE.Vector3(),
