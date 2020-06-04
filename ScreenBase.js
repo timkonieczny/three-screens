@@ -141,13 +141,33 @@ class ScreenBase {
             object.addEventListener("transitionInFinished", onTransitionFinished)
             object.addEventListener("update", object.animation.transitionShared.callback)
         })
-        this.camera.animation.transitionShared.time.elapsed = 0
-        this.camera.animation.transitionShared.screen.from = this
-        this.camera.animation.transitionShared.screen.to = nextScreen
-        this.camera.addEventListener(
-            "update",
-            this.camera.animation.transitionShared.callback
-        )
+
+        const fromConfig = this.sharedObjectConfigs["camera"]
+        const toConfig = nextScreen.sharedObjectConfigs["camera"]
+        if (fromConfig && toConfig) {
+            const animation = this.camera.animation.transitionShared
+            if (fromConfig.position && toConfig.position) {
+                animation.from.position.copy(fromConfig.position)
+                animation.to.position.copy(toConfig.position)
+            }
+            if (fromConfig.scale && toConfig.scale) {
+                animation.from.scale.copy(fromConfig.scale)
+                animation.to.scale.copy(toConfig.scale)
+            }
+            if (fromConfig.quaternion && toConfig.quaternion) {
+                animation.from.quaternion.copy(fromConfig.quaternion)
+                animation.to.quaternion.copy(toConfig.quaternion)
+            }
+
+            const onComplete = (animation, camera) => {
+                camera.removeEventListener("update", animation.update)
+                animation.removeEventListener("complete", onComplete)
+            }
+            animation.addEventListener("complete", onComplete)
+            animation.init(this.camera)
+            this.camera.addEventListener("update", animation.update)
+        }
+
     }
 
     addSharedObject(sharedObject, screen, sharedWithScreens) {

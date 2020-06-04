@@ -9,6 +9,7 @@ class Animation {
                 return Math.min(1, interpolator)
             }
         }
+        // TODO: add FOV
         this.from = {
             position: new THREE.Vector3(),
             scale: new THREE.Vector3(),

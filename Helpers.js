@@ -247,37 +247,22 @@ const initializeObject = (object, name, listenersOnly = false) => {
 const initializeCamera = camera => {
 
     camera.animation = {
-        transitionShared: {
-            time: {
-                total: 1200,
-                elapsed: 0
-            },
-            screen: {
-                from: null,
-                to: null
-            },
-            callback: (tslf, camera) => {
-                const animation = camera.animation.transitionShared
-                animation.time.elapsed += tslf
-                const interpolator = Math.min(animation.time.elapsed / animation.time.total, 1)
-                const fromConfig = animation.screen.from.sharedObjectConfigs["camera"]
-                const toConfig = animation.screen.to.sharedObjectConfigs["camera"]
-                if (fromConfig && toConfig) {
-                    if (fromConfig.position && toConfig.position)
-                        camera.position.lerpVectors(fromConfig.position, toConfig.position, easeOutExpo(interpolator, 0, 1, 1))
-                    if (fromConfig.rotation && toConfig.rotation)
-                        THREE.Quaternion.slerp(fromConfig.rotation, toConfig.rotation, camera.quaternion, easeOutExpo(interpolator, 0, 1, 1))
-                    if (fromConfig.fov && toConfig.fov) {
-                        const fovDelta = toConfig.fov - fromConfig.fov
-                        camera.fov = fromConfig.fov + fovDelta * easeOutExpo(interpolator, 0, 1, 1)
-                        camera.updateProjectionMatrix()
-                    }
-                }
-                if (interpolator === 1) {
-                    camera.removeEventListener("update", camera.updateSharedScreenTransition)
-                }
-            }
-        }
+        transitionShared: new Animation()
+    }
+
+    camera.animation.transitionShared.reset = _ => {
+        const animation = camera.animation.transitionShared
+        if (animation.loop)
+            animation.time.elapsed %= animation.time.total
+        else
+            animation.time.elapsed = 0
+
+        animation.from.position.set(0, 0, 0)
+        animation.from.scale.set(0, 0, 0)
+        animation.from.quaternion.set(0, 0, 0, 0)
+        animation.to.position.set(0, 0, 0)
+        animation.to.scale.set(0, 0, 0)
+        animation.to.quaternion.set(0, 0, 0, 0)
     }
 
     camera.listeners = {
