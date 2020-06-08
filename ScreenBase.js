@@ -26,7 +26,7 @@ class ScreenBase {
                 this.nonSharedObjects.length
             ) {
                 this.numberOfReadyNonSharedObjects = 0
-                this.listeners.transitionInFinished.forEach(listener => {
+                this.listeners.transitionInFinished.slice().forEach(listener => {
                     listener(this)
                 })
             }
