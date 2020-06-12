@@ -158,6 +158,10 @@ class ScreenBase {
                 animation.from.quaternion.copy(fromConfig.quaternion)
                 animation.to.quaternion.copy(toConfig.quaternion)
             }
+            if (fromConfig.fov && toConfig.fov) {
+                animation.from.fov = fromConfig.fov
+                animation.to.fov = toConfig.fov
+            }
 
             const onComplete = (animation, camera) => {
                 camera.removeEventListener("update", animation.update)

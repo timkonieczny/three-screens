@@ -9,28 +9,33 @@ class Animation {
                 return Math.min(1, interpolator)
             }
         }
-        // TODO: add FOV
+
         this.from = {
             position: new THREE.Vector3(),
             scale: new THREE.Vector3(),
-            quaternion: new THREE.Quaternion()
+            quaternion: new THREE.Quaternion(),
+            fov: 50
         }
         this.to = {
             position: new THREE.Vector3(),
             scale: new THREE.Vector3(),
-            quaternion: new THREE.Quaternion()
+            quaternion: new THREE.Quaternion(),
+            fov: 50
         }
         this.last = {
             position: new THREE.Vector3(),
-            scale: new THREE.Vector3()
+            scale: new THREE.Vector3(),
+            fov: 50
         }
         this.current = {
             position: new THREE.Vector3(),
-            scale: new THREE.Vector3()
+            scale: new THREE.Vector3(),
+            fov: 50
         }
         this.delta = {
             position: new THREE.Vector3(),
-            scale: new THREE.Vector3()
+            scale: new THREE.Vector3(),
+            fov: 50
         }
         this.listeners = {
             complete: []
@@ -48,6 +53,13 @@ class Animation {
             mesh.position.copy(this.from.position)
         if (!this.from.scale.equals(this.to.scale))
             mesh.scale.copy(this.from.scale)
+        if (mesh.fov) {
+            this.last.fov = mesh.fov
+            if (this.from.fov !== this.to.fov) {
+                mesh.fov = this.from.fov
+                mesh.updateProjectionMatrix()
+            }
+        }
     }
 
     reset() {
@@ -75,6 +87,13 @@ class Animation {
         }
         if (!this.from.quaternion.equals(this.to.quaternion)) {
             THREE.Quaternion.slerp(this.from.quaternion, this.to.quaternion, mesh.quaternion, interpolator)
+        }
+        if (this.from.fov !== this.to.fov) {
+            this.current.fov = this.from.fov + interpolator * (this.to.fov - this.from.fov)
+            this.delta.fov = this.current.fov - this.last.fov
+            mesh.fov += this.delta.fov
+            this.last.fov = this.current.fov
+            mesh.updateProjectionMatrix()
         }
 
         if (this.time.elapsed > this.time.total) {
