@@ -187,7 +187,7 @@ class ScreenBase {
     }
 
     update(tslf) {
-        this.listeners.update.forEach(listener => {
+        this.listeners.update.slice().forEach(listener => {
             listener(this, tslf)
         })
         this.objects.forEach(object => {
@@ -197,7 +197,7 @@ class ScreenBase {
                 })
             }
         })
-        this.camera.listeners.update.forEach(listener => {
+        this.camera.listeners.update.slice().forEach(listener => {
             listener(tslf, this.camera)
         })
     }
@@ -210,12 +210,15 @@ class ScreenBase {
     }
 
     addEventListener(type, listener) {
-        this.listeners[type].push(listener)
+        if (!this.hasEventListener(type, listener))
+            this.listeners[type].push(listener)
     }
 
     removeEventListener(type, listener) {
-        const index = this.listeners[type].indexOf(listener)
-        this.listeners[type].splice(index, 1)
+        if (this.hasEventListener(type, listener)) {
+            const index = this.listeners[type].indexOf(listener)
+            this.listeners[type].splice(index, 1)
+        }
     }
 
     hasEventListener(type, listener) {
