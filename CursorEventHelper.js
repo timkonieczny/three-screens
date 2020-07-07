@@ -26,14 +26,18 @@ class CursorEventHelper {
             mouseMove: []
         }
 
-        const downPosition = {
+        this.downPosition = {
             x: null,
             y: null,
             set: (x, y) => {
-                downPosition.x = x,
-                    downPosition.y = y
+                this.downPosition.x = x,
+                    this.downPosition.y = y
             }
         }
+
+        this.onTouchEnd = this.onTouchEnd.bind(this)
+        this.onClick = this.onClick.bind(this)
+        this.onTouchDrag = this.onTouchDrag.bind(this)
 
         const convertToGLCoordinates = coordinates => {
             return {
@@ -42,7 +46,7 @@ class CursorEventHelper {
             }
         }
 
-        const data = {
+        this.data = {
             x: null,
             y: null,
             last: {
@@ -67,24 +71,24 @@ class CursorEventHelper {
             },
             initialEvent: null,
             set: (x, y, event = null) => {
-                data.initialEvent = event
-                data.last.x = data.x
-                data.last.y = data.y
-                data.x = x
-                data.y = y
-                if (data.last.x && data.last.y) {
-                    data.delta.x = data.x - data.last.x
-                    data.delta.y = data.y - data.last.y
+                this.data.initialEvent = event
+                this.data.last.x = this.data.x
+                this.data.last.y = this.data.y
+                this.data.x = x
+                this.data.y = y
+                if (this.data.last.x && this.data.last.y) {
+                    this.data.delta.x = this.data.x - this.data.last.x
+                    this.data.delta.y = this.data.y - this.data.last.y
                 }
 
-                const converted = convertToGLCoordinates(data)
-                data.gl.last.x = data.gl.x
-                data.gl.last.y = data.gl.y
-                data.gl.x = converted.x
-                data.gl.y = converted.y
-                if (data.gl.last.x && data.gl.last.y) {
-                    data.gl.delta.x = data.gl.x - data.gl.last.x
-                    data.gl.delta.y = data.gl.y - data.gl.last.y
+                const converted = convertToGLCoordinates(this.data)
+                this.data.gl.last.x = this.data.gl.x
+                this.data.gl.last.y = this.data.gl.y
+                this.data.gl.x = converted.x
+                this.data.gl.y = converted.y
+                if (this.data.gl.last.x && this.data.gl.last.y) {
+                    this.data.gl.delta.x = this.data.gl.x - this.data.gl.last.x
+                    this.data.gl.delta.y = this.data.gl.y - this.data.gl.last.y
                 }
             },
         }
@@ -92,29 +96,24 @@ class CursorEventHelper {
         let hasTouchStart = false
 
         const onMouseDrag = _ => {
-            this.listeners.mouseDrag.forEach(listener => { listener(data) })
-            this.listeners.drag.forEach(listener => { listener(data) })
+            this.listeners.mouseDrag.forEach(listener => { listener(this.data) })
+            this.listeners.drag.forEach(listener => { listener(this.data) })
         }
 
         this.target.addEventListener("mousemove", event => {
             if (!hasTouchStart) {
-                data.set(event.clientX, event.clientY, event)
-                this.listeners.mouseMove.forEach(listener => { listener(data) })
+                this.data.set(event.clientX, event.clientY, event)
+                this.listeners.mouseMove.forEach(listener => { listener(this.data) })
             }
         })
 
-        const onTouchDrag = event => {
-            data.set(event.touches[0].clientX, event.touches[0].clientY, event)
-            this.listeners.touchDrag.forEach(listener => { listener(data) })
-            this.listeners.drag.forEach(listener => { listener(data) })
-        }
 
         this.target.addEventListener("mousedown", event => {
             if (!hasTouchStart) {
-                data.set(event.clientX, event.clientY, event)
-                downPosition.set(event.clientX, event.clientY)
-                this.listeners.mouseDown.forEach(listener => { listener(data) })
-                this.listeners.down.forEach(listener => { listener(data) })
+                this.data.set(event.clientX, event.clientY, event)
+                this.downPosition.set(event.clientX, event.clientY)
+                this.listeners.mouseDown.forEach(listener => { listener(this.data) })
+                this.listeners.down.forEach(listener => { listener(this.data) })
                 this.target.addEventListener("mousemove", onMouseDrag)
             }
         })
@@ -123,35 +122,45 @@ class CursorEventHelper {
             if (hasTouchStart)
                 hasTouchStart = false
             else {
-                if (data.x === downPosition.x && data.y === downPosition.y)
-                    this.target.addEventListener("click", onClick)
-                this.listeners.mouseUp.forEach(listener => { listener(data) })
-                this.listeners.up.forEach(listener => { listener(data) })
+                if (this.data.x === this.downPosition.x && this.data.y === this.downPosition.y)
+                    this.target.addEventListener("click", this.onClick)
+                this.listeners.mouseUp.forEach(listener => { listener(this.data) })
+                this.listeners.up.forEach(listener => { listener(this.data) })
                 this.target.removeEventListener("mousemove", onMouseDrag)
             }
         })
 
         this.target.addEventListener("touchstart", event => {
+            console.log("touchstart")
             hasTouchStart = true
-            data.set(event.touches[0].clientX, event.touches[0].clientY, event)
-            downPosition.set(event.touches[0].clientX, event.touches[0].clientY)
-            this.listeners.touchStart.forEach(listener => { listener(data) })
-            this.listeners.down.forEach(listener => { listener(data) })
-            this.target.addEventListener("touchmove", onTouchDrag)
+            this.data.set(event.touches[0].clientX, event.touches[0].clientY, event)
+            this.downPosition.set(event.touches[0].clientX, event.touches[0].clientY)
+            this.listeners.touchStart.forEach(listener => { listener(this.data) })
+            this.listeners.down.forEach(listener => { listener(this.data) })
+            this.target.addEventListener("touchmove", this.onTouchDrag)
         })
 
-        this.target.addEventListener("touchend", event => {
-            if (data.x === downPosition.x && data.y === downPosition.y)
-                this.target.addEventListener("click", onClick)
-            this.listeners.touchEnd.forEach(listener => { listener(data) })
-            this.listeners.up.forEach(listener => { listener(data) })
-            this.target.removeEventListener("touchmove", onTouchDrag)
-        })
+        this.target.addEventListener("touchend", this.onTouchEnd)
+    }
 
-        const onClick = event => {
-            this.target.removeEventListener("click", onClick)
-            this.listeners.click.forEach(listener => { listener(data) })
-        }
+    onTouchEnd(event) {
+        console.log("touchend")
+        if (this.data.x === this.downPosition.x && this.data.y === this.downPosition.y)
+            this.target.addEventListener("click", this.onClick)
+        this.listeners.touchEnd.forEach(listener => { listener(this.data) })
+        this.listeners.up.forEach(listener => { listener(this.data) })
+        this.target.removeEventListener("touchmove", this.onTouchDrag)
+    }
+
+    onClick(event) {
+        this.target.removeEventListener("click", this.onClick)
+        this.listeners.click.forEach(listener => { listener(this.data) })
+    }
+
+    onTouchDrag(event) {
+        this.data.set(event.touches[0].clientX, event.touches[0].clientY, event)
+        this.listeners.touchDrag.forEach(listener => { listener(this.data) })
+        this.listeners.drag.forEach(listener => { listener(this.data) })
     }
 
     addEventListener(type, listener) {
